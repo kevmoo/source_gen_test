@@ -20,12 +20,6 @@ const TestClass1NameLowerCase = testclass1;
 @TestAnnotation()
 class TestClass1 {}
 
-@ShouldThrow(
-  'All classes must start with `TestClass`.',
-  todo: 'Rename the type or remove the `TestAnnotation` from class.',
-  configurations: ['default'],
-  expectedLogItems: ['This member might be not good.'],
-)
 @ShouldGenerate(
   r'''
 const BadTestClassNameLength = 12;
@@ -33,6 +27,12 @@ const BadTestClassNameLength = 12;
 const BadTestClassNameLowerCase = badtestclass;
 ''',
   configurations: ['no-prefix-required'],
+  expectedLogItems: ['This member might be not good.'],
+)
+@ShouldThrow(
+  'All classes must start with `TestClass`.',
+  todo: 'Rename the type or remove the `TestAnnotation` from class.',
+  configurations: ['default'],
   expectedLogItems: ['This member might be not good.'],
 )
 @ShouldThrow(
