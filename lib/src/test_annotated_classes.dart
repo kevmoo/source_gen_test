@@ -147,7 +147,7 @@ List<_AnnotatedTest> getAnnotatedClasses(
 
       if (generator == null) {
         mapMissingConfigs
-            .putIfAbsent(entry.elementName, () => <String>{})
+            .putIfAbsent(entry.elementName, () => Set<String>())
             .add(configuration);
         continue;
       }
