@@ -3,6 +3,11 @@ import 'dart:io';
 import 'package:source_gen_test/src/init_library_reader.dart';
 import 'package:test/test.dart';
 
+Object _skipDart200() {
+  print(Platform.environment.entries.join(','));
+  return null;
+}
+
 // TODO: test initializeLibraryReader - but since
 //  `initializeLibraryReaderForDirectory` wraps it, not a big hurry
 void main() {
@@ -49,6 +54,6 @@ void main() {
                 'Does not seem to reference a Dart library.')
             .having((ae) => ae.name, 'name', 'targetLibraryFileName')),
       );
-    });
+    }, skip: _skipDart200());
   });
 }
