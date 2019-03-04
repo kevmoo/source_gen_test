@@ -5,8 +5,8 @@ dart:
   - dev
 
 dart_task:
-  - test:
-  - dartanalyzer: --fatal-infos --fatal-warnings .
+#  - test:
+#  - dartanalyzer: --fatal-infos --fatal-warnings .
   - dartfmt
 
 # Only building master means that we don't run two builds for each pull request.

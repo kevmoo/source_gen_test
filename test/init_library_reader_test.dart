@@ -4,7 +4,11 @@ import 'package:source_gen_test/src/init_library_reader.dart';
 import 'package:test/test.dart';
 
 Object _skipDart200() {
-  print(Platform.environment.entries.join(','));
+  final travisDartVersion = Platform.environment['TRAVIS_DART_VERSION'];
+  print(travisDartVersion);
+  if (travisDartVersion == '2.0.0') {
+    return 'Skipping on Dart 2.0.0';
+  }
   return null;
 }
 
