@@ -271,7 +271,7 @@ const TestClass2NameLowerCase = testclass2;
           _throwsArgumentError(
               'Some of the specified generators were not used for their '
               'corresponding configurations: "extra".\n'
-              'Remove the entry from `additinalGenerators` or update '
+              'Remove the entry from `additionalGenerators` or update '
               '`defaultConfiguration`.'),
         );
       });

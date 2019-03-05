@@ -100,11 +100,17 @@ List<_AnnotatedTest> getAnnotatedClasses(
     unusedConfigurations.removeAll(annotatedElement.expectation.configurations);
   }
   if (unusedConfigurations.isNotEmpty) {
+    if (unusedConfigurations.contains(_defaultConfigurationName)) {
+      throw ArgumentError(
+        'The `defaultGenerator` is not used by any annotated elements.',
+      );
+    }
+
     throw ArgumentError(
       'Some of the specified generators were not used for their corresponding '
           'configurations: '
           '${unusedConfigurations.map((c) => '"$c"').join(', ')}.\n'
-          'Remove the entry from `additinalGenerators` or update '
+          'Remove the entry from `additionalGenerators` or update '
           '`defaultConfiguration`.',
     );
   }
