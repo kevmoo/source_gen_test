@@ -1,4 +1,4 @@
-## 0.1.1
+## 0.1.0+1
 
 - Fix and improve errors thrown when generators are not used.
 

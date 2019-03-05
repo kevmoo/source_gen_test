@@ -1,5 +1,5 @@
 name: source_gen_test
-version: 0.1.1-dev
+version: 0.1.0+1
 description: >-
   Test support for the source_gen package.
   Includes helpers to make it easy to validate both success and failure cases.
