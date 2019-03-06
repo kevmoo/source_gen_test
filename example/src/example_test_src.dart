@@ -15,6 +15,19 @@ class TestClass1 {}
 
 @ShouldGenerate(
   r'''
+const TestClass2NameLength = 10;
+
+const TestClass2NameLowerCase = testclass2;
+
+const TestClass2NameUpperCase = TESTCLASS2;
+''',
+  configurations: ['default', 'no-prefix-required'],
+)
+@ExampleAnnotation(includeUpperCase: true)
+class TestClass2 {}
+
+@ShouldGenerate(
+  r'''
 const BadTestClassNameLength = 12;
 
 const BadTestClassNameLowerCase = badtestclass;
@@ -32,27 +45,8 @@ const BadTestClassNameLowerCase = badtestclass;
 class BadTestClass {}
 
 @ShouldThrow(
-  'Cannot generate for classes with members that include `unsupported` in '
-      'their name.',
-  element: 'unsupportedFunc',
-  configurations: ['default'],
-  expectedLogItems: ['This member might be not good.'],
-)
-@ExampleAnnotation()
-class TestClassWithBadMember {
-  void unsupportedFunc() {}
-}
-
-@ShouldThrow(
   'Only supports annotated classes.',
   todo: 'Remove `TestAnnotation` from the associated element.',
 )
 @ExampleAnnotation()
-int badTestFunc() => 42;
-
-@ShouldThrow(
-  'Only supports annotated classes.',
-  todo: 'Remove `TestAnnotation` from the associated element.',
-)
-@ExampleAnnotation()
-final badTestField = 42;
+int anotherExampleFunction() => 42;

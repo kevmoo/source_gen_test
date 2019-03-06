@@ -3,15 +3,20 @@
 import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/type.dart';
 import 'package:dart_style/dart_style.dart' as dart_style;
 import 'package:source_gen/source_gen.dart';
 import 'package:source_gen/src/output_helpers.dart'
     show normalizeGeneratorOutput;
 
+import 'init_library_reader.dart' show testPackageName;
+
 final _formatter = dart_style.DartFormatter();
 
-Future<String> generateForElement(
-  GeneratorForAnnotation generator,
+final _testAnnotationWarnings = Set<String>();
+
+Future<String> generateForElement<T>(
+  GeneratorForAnnotation<T> generator,
   LibraryReader libraryReader,
   String name,
 ) async {
@@ -37,7 +42,44 @@ Future<String> generateForElement(
     }
   }
 
-  final annotation = generator.typeChecker.firstAnnotationOf(element);
+  var annotation =
+      generator.typeChecker.firstAnnotationOf(element, throwOnUnresolved: true);
+
+  if (annotation == null) {
+    final annotationFromTestLib = element.metadata
+        .map((ea) => ea.computeConstantValue())
+        .where((obj) {
+          if (obj.type is InterfaceType) {
+            final uri = (obj.type as InterfaceType).element.source.uri;
+            return uri.isScheme('package') &&
+                uri.pathSegments.first == testPackageName;
+          }
+
+          return false;
+        })
+        .where((obj) => obj.type.name == T.toString())
+        .toList();
+
+    String msg;
+    if (annotationFromTestLib.length == 1) {
+      annotation = annotationFromTestLib[0];
+
+      msg = '''
+  NOTE: Could not find an annotation that matched
+      ${generator.typeChecker}.
+    Using a annotation with the same name from the synthetic library instead
+      ${(annotation.type as InterfaceType).element.source.uri}#${annotation.type.name}''';
+    } else {
+      msg = '''
+  NOTE: Could not find an annotation that matched
+      ${generator.typeChecker}.
+    The `ConstReader annotation` argument to your generator will have a `null` element.''';
+    }
+
+    if (_testAnnotationWarnings.add(msg)) {
+      print(msg);
+    }
+  }
 
   final generatedStream = normalizeGeneratorOutput(generator
       .generateForAnnotatedElement(element, ConstantReader(annotation), null));

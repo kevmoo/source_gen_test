@@ -14,23 +14,13 @@ class ExampleGenerator extends GeneratorForAnnotation<ExampleAnnotation> {
   @override
   Iterable<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) sync* {
+    assert(!annotation.isNull, 'The source annotation should be set!');
+
     if (element.name.contains('Bad')) {
       log.info('This member might be not good.');
     }
 
-    if (element is ClassElement) {
-      final unsupportedFunc = element.methods.firstWhere(
-          (me) => me.name.contains('unsupported'),
-          orElse: () => null);
-
-      if (unsupportedFunc != null) {
-        throw InvalidGenerationSourceError(
-          'Cannot generate for classes with members that include '
-              '`unsupported` in their name.',
-          element: unsupportedFunc,
-        );
-      }
-    } else {
+    if (element is! ClassElement) {
       throw InvalidGenerationSourceError(
         'Only supports annotated classes.',
         todo: 'Remove `TestAnnotation` from the associated element.',
@@ -48,6 +38,10 @@ class ExampleGenerator extends GeneratorForAnnotation<ExampleAnnotation> {
 
     yield 'const ${element.name}NameLength = ${element.name.length};';
     yield 'const ${element.name}NameLowerCase = ${element.name.toLowerCase()};';
+
+    if (annotation.read('includeUpperCase').literalValue as bool) {
+      yield 'const ${element.name}NameUpperCase = ${element.name.toUpperCase()};';
+    }
   }
 
   @override

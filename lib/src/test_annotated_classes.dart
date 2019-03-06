@@ -23,14 +23,14 @@ const _defaultConfigurationName = 'default';
 /// members in [libraryReader] that are annotated for testing. If the same
 /// element is annotated for multiple tests, it should appear in the list
 /// the same number of times.
-void testAnnotatedElements(
+void testAnnotatedElements<T>(
   LibraryReader libraryReader,
-  GeneratorForAnnotation defaultGenerator, {
-  Map<String, GeneratorForAnnotation> additionalGenerators,
+  GeneratorForAnnotation<T> defaultGenerator, {
+  Map<String, GeneratorForAnnotation<T>> additionalGenerators,
   Iterable<String> expectedAnnotatedTests,
   Iterable<String> defaultConfiguration,
 }) {
-  for (var entry in getAnnotatedClasses(
+  for (var entry in getAnnotatedClasses<T>(
     libraryReader,
     defaultGenerator,
     additionalGenerators: additionalGenerators,
@@ -44,14 +44,16 @@ void testAnnotatedElements(
 /// An implementation member only exposed to make it easier to test
 /// [testAnnotatedElements] without registering any tests.
 @visibleForTesting
-List<_AnnotatedTest> getAnnotatedClasses(
+List<_AnnotatedTest> getAnnotatedClasses<T>(
   LibraryReader libraryReader,
-  GeneratorForAnnotation defaultGenerator, {
-  @required Map<String, GeneratorForAnnotation> additionalGenerators,
+  GeneratorForAnnotation<T> defaultGenerator, {
+  @required Map<String, GeneratorForAnnotation<T>> additionalGenerators,
   @required Iterable<String> expectedAnnotatedTests,
   @required Iterable<String> defaultConfiguration,
 }) {
-  final generators = {_defaultConfigurationName: defaultGenerator};
+  final generators = <String, GeneratorForAnnotation<T>>{
+    _defaultConfigurationName: defaultGenerator
+  };
   if (additionalGenerators != null) {
     for (var invalidKey in const [_defaultConfigurationName, '']) {
       if (additionalGenerators.containsKey(invalidKey)) {
@@ -142,7 +144,7 @@ List<_AnnotatedTest> getAnnotatedClasses(
     }
   }
 
-  final result = <_AnnotatedTest>[];
+  final result = <_AnnotatedTest<T>>[];
 
   // element name -> missing configs
   final mapMissingConfigs = <String, Set<String>>{};
@@ -158,7 +160,7 @@ List<_AnnotatedTest> getAnnotatedClasses(
         continue;
       }
 
-      result.add(_AnnotatedTest._(
+      result.add(_AnnotatedTest<T>._(
         libraryReader,
         generator,
         configuration,
@@ -187,8 +189,8 @@ List<_AnnotatedTest> getAnnotatedClasses(
   return result;
 }
 
-class _AnnotatedTest {
-  final GeneratorForAnnotation generator;
+class _AnnotatedTest<T> {
+  final GeneratorForAnnotation<T> generator;
   final String configuration;
   final LibraryReader _libraryReader;
   final TestExpectation expectation;
@@ -222,7 +224,7 @@ class _AnnotatedTest {
   }
 
   Future<String> _generate() =>
-      generateForElement(generator, _libraryReader, _elementName);
+      generateForElement<T>(generator, _libraryReader, _elementName);
 
   Future<Null> _shouldGenerateTest() async {
     final output = await _generate();
