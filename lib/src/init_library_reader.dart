@@ -6,6 +6,8 @@ import 'package:build_test/build_test.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_gen/source_gen.dart';
 
+const testPackageName = '__test__';
+
 /// Returns a [LibraryReader] for library specified by [targetLibraryFileName]
 /// using the files in [sourceDirectory].
 Future<LibraryReader> initializeLibraryReaderForDirectory(
@@ -38,7 +40,7 @@ Future<LibraryReader> initializeLibraryReader(
         'Must exist as a key in `contentMap`.');
   }
 
-  String assetIdForFile(String fileName) => '__test__|lib/$fileName';
+  String assetIdForFile(String fileName) => '$testPackageName|lib/$fileName';
 
   final targetLibraryAssetId = assetIdForFile(targetLibraryFileName);
 
