@@ -1,3 +1,7 @@
+## 0.1.0+2
+
+- Fix `generateForElement` for fields.
+
 ## 0.1.0+1
 
 - Fix and improve errors thrown when generators are not used.

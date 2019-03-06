@@ -67,14 +67,14 @@ class TestClassWithBadMember {
 @TestAnnotation()
 int badTestFunc() => 42;
 
-// TODO: investigate annotated fields
-/*
-BUGGY!
-
 @ShouldThrow(
-  'All classes must start with `TestClass`.',
-  todo: 'Rename the type or remove the `TestAnnotation` from class.',
+  'Only supports annotated classes.',
+  todo: 'Remove `TestAnnotation` from the associated element.',
+)
+@ShouldThrow(
+  'Uh...',
+  configurations: ['vague'],
+  element: false,
 )
 @TestAnnotation()
 final badTestField = 42;
-*/

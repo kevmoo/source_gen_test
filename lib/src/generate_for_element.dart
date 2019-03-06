@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:analyzer/src/dart/element/element.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:dart_style/dart_style.dart' as dart_style;
 import 'package:source_gen/source_gen.dart';
 import 'package:source_gen/src/output_helpers.dart'
@@ -15,15 +15,28 @@ Future<String> generateForElement(
   LibraryReader libraryReader,
   String name,
 ) async {
-  final element = libraryReader.allElements.singleWhere(
-    (e) => e is! ConstVariableElement && e.name == name,
-    orElse: () => null,
-  );
+  final elements =
+      libraryReader.allElements.where((e) => e.name == name).toList();
 
-  if (element == null) {
+  if (elements.isEmpty) {
     throw ArgumentError.value(
         name, 'name', 'Could not find an element with name `$name`.');
   }
+
+  Element element;
+
+  if (elements.length == 1) {
+    element = elements[0];
+  } else {
+    final rootProperties =
+        elements.whereType<PropertyInducingElement>().toList();
+    if (rootProperties.length == 1) {
+      element = rootProperties[0];
+    } else {
+      throw UnimplementedError();
+    }
+  }
+
   final annotation = generator.typeChecker.firstAnnotationOf(element);
 
   final generatedStream = normalizeGeneratorOutput(generator

@@ -114,6 +114,8 @@ const TestClass2NameLowerCase = testclass2;
       'TestClass2',
       'TestClass2',
       'TestClassWithBadMember',
+      'badTestField',
+      'badTestField',
     ];
 
     group('[integration tests]', () {
@@ -136,7 +138,7 @@ const TestClass2NameLowerCase = testclass2;
           defaultConfiguration: null,
         );
 
-        expect(list, hasLength(13));
+        expect(list, hasLength(16));
       });
 
       test('valid configuration', () {
@@ -148,7 +150,7 @@ const TestClass2NameLowerCase = testclass2;
           defaultConfiguration: ['default', 'no-prefix-required', 'vague'],
         );
 
-        expect(list, hasLength(13));
+        expect(list, hasLength(16));
       });
 
       test('different defaultConfiguration', () {
@@ -160,7 +162,7 @@ const TestClass2NameLowerCase = testclass2;
           defaultConfiguration: ['default'],
         );
 
-        expect(list, hasLength(11));
+        expect(list, hasLength(13));
       });
 
       test('different defaultConfiguration', () {
@@ -172,7 +174,7 @@ const TestClass2NameLowerCase = testclass2;
           defaultConfiguration: ['no-prefix-required'],
         );
 
-        expect(list, hasLength(11));
+        expect(list, hasLength(13));
       });
     });
     group('defaultConfiguration', () {
@@ -288,6 +290,7 @@ const TestClass2NameLowerCase = testclass2;
                 '`BadTestClass`: "no-prefix-required", "vague"; '
                 '`TestClass1`: "no-prefix-required", "vague"; '
                 '`TestClass2`: "vague"; '
+                '`badTestField`: "vague"; '
                 '`badTestFunc`: "vague"'));
       });
 
