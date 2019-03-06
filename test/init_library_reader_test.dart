@@ -23,6 +23,8 @@ void main() {
         reader.allElements.map((e) => e.name),
         unorderedMatches([
           'BadTestClass',
+          'badTestField',
+          'badTestField',
           'badTestFunc',
           'TestClass1',
           'TestClass2',
