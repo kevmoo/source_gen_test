@@ -1,3 +1,7 @@
+## 0.1.0+3
+
+- Support the latest `package:analyzer`.
+
 ## 0.1.0+2
 
 - Fix `generateForElement` for fields.
