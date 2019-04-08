@@ -37,7 +37,7 @@ List<_ExpectationElement> genAnnotatedElements(
       final list = duplicateConfigs.toList()..sort();
       throw InvalidGenerationSourceError(
         'There are multiple annotations for these configurations: '
-            '${list.map((e) => '"$e"').join(', ')}.',
+        '${list.map((e) => '"$e"').join(', ')}.',
         todo: 'Ensure each configuration is only represented once per member.',
         element: element,
       );

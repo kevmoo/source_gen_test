@@ -45,7 +45,7 @@ class BadTestClass {}
 
 @ShouldThrow(
   'Cannot generate for classes with members that include `unsupported` in '
-      'their name.',
+  'their name.',
   element: 'unsupportedFunc',
   configurations: ['default'],
   expectedLogItems: ['This member might be not good.'],

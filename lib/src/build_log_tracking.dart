@@ -41,7 +41,7 @@ void initializeBuildLogTracking() {
     if (remainingItems.isNotEmpty) {
       fail(
         '`buildLogItems` is not empty. Tests should validate the contents of '
-            '`buildLogItems` and call `clearBuildLog` before `tearDown`.',
+        '`buildLogItems` and call `clearBuildLog` before `tearDown`.',
       );
     }
   });

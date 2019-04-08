@@ -110,10 +110,10 @@ List<_AnnotatedTest> getAnnotatedClasses<T>(
 
     throw ArgumentError(
       'Some of the specified generators were not used for their corresponding '
-          'configurations: '
-          '${unusedConfigurations.map((c) => '"$c"').join(', ')}.\n'
-          'Remove the entry from `additionalGenerators` or update '
-          '`defaultConfiguration`.',
+      'configurations: '
+      '${unusedConfigurations.map((c) => '"$c"').join(', ')}.\n'
+      'Remove the entry from `additionalGenerators` or update '
+      '`defaultConfiguration`.',
     );
   }
 
@@ -182,7 +182,7 @@ List<_AnnotatedTest> getAnnotatedClasses<T>(
 
     throw ArgumentError(
       'There are elements defined with configurations with no associated '
-          'generator provided.\n$message',
+      'generator provided.\n$message',
     );
   }
 

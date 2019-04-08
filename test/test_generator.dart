@@ -33,7 +33,7 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
       if (unsupportedFunc != null) {
         throw InvalidGenerationSourceError(
           'Cannot generate for classes with members that include '
-              '`unsupported` in their name.',
+          '`unsupported` in their name.',
           element: unsupportedFunc,
         );
       }
