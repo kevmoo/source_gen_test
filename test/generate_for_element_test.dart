@@ -181,11 +181,11 @@ const TestClass2NameLowerCase = testclass2;
       test('empty', () {
         expect(
           () => testAnnotatedElements(
-                reader,
-                const TestGenerator(),
-                additionalGenerators: validAdditionalGenerators,
-                defaultConfiguration: [],
-              ),
+            reader,
+            const TestGenerator(),
+            additionalGenerators: validAdditionalGenerators,
+            defaultConfiguration: [],
+          ),
           _throwsArgumentError(
             'Cannot be empty.',
             'defaultConfiguration',
@@ -196,14 +196,14 @@ const TestClass2NameLowerCase = testclass2;
       test('unknown item', () {
         expect(
           () => testAnnotatedElements(
-                reader,
-                const TestGenerator(),
-                additionalGenerators: const {
-                  'no-prefix-required':
-                      TestGenerator(requireTestClassPrefix: false),
-                },
-                defaultConfiguration: ['unknown'],
-              ),
+            reader,
+            const TestGenerator(),
+            additionalGenerators: const {
+              'no-prefix-required':
+                  TestGenerator(requireTestClassPrefix: false),
+            },
+            defaultConfiguration: ['unknown'],
+          ),
           _throwsArgumentError(
             'Contains values not associated with provided generators: '
                 '"unknown".',
@@ -217,15 +217,15 @@ const TestClass2NameLowerCase = testclass2;
       test('too many', () {
         expect(
           () => testAnnotatedElements(
-                reader,
-                const TestGenerator(),
-                expectedAnnotatedTests: [
-                  'TestClass1',
-                  'TestClass2',
-                  'BadTestClass',
-                  'extra'
-                ],
-              ),
+            reader,
+            const TestGenerator(),
+            expectedAnnotatedTests: [
+              'TestClass1',
+              'TestClass2',
+              'BadTestClass',
+              'extra'
+            ],
+          ),
           _throwsArgumentError(
             'There are unexpected items',
             'expectedAnnotatedTests',
@@ -236,13 +236,13 @@ const TestClass2NameLowerCase = testclass2;
       test('too few', () {
         expect(
           () => testAnnotatedElements(
-                reader,
-                const TestGenerator(),
-                expectedAnnotatedTests: [
-                  'TestClass1',
-                  'TestClass2',
-                ],
-              ),
+            reader,
+            const TestGenerator(),
+            expectedAnnotatedTests: [
+              'TestClass1',
+              'TestClass2',
+            ],
+          ),
           _throwsArgumentError(
             'There are items missing',
             'expectedAnnotatedTests',
@@ -255,21 +255,21 @@ const TestClass2NameLowerCase = testclass2;
       test('unused generator fails', () {
         expect(
           () => testAnnotatedElements(
-                reader,
-                const TestGenerator(),
-                additionalGenerators: {'extra': const TestGenerator()}
-                  ..addAll(validAdditionalGenerators),
-                expectedAnnotatedTests: [
-                  'TestClass1',
-                  'TestClass2',
-                  'BadTestClass',
-                  'BadTestClass',
-                  'badTestFunc',
-                  'badTestFunc',
-                ],
-                // 'vague' is excluded here!
-                defaultConfiguration: ['default', 'no-prefix-required'],
-              ),
+            reader,
+            const TestGenerator(),
+            additionalGenerators: {'extra': const TestGenerator()}
+              ..addAll(validAdditionalGenerators),
+            expectedAnnotatedTests: [
+              'TestClass1',
+              'TestClass2',
+              'BadTestClass',
+              'BadTestClass',
+              'badTestFunc',
+              'badTestFunc',
+            ],
+            // 'vague' is excluded here!
+            defaultConfiguration: ['default', 'no-prefix-required'],
+          ),
           _throwsArgumentError(
               'Some of the specified generators were not used for their '
               'corresponding configurations: "extra".\n'
@@ -297,12 +297,12 @@ const TestClass2NameLowerCase = testclass2;
       test('key "default" not allowed', () {
         expect(
           () => testAnnotatedElements(
-                reader,
-                const TestGenerator(),
-                additionalGenerators: const {
-                  'default': TestGenerator(requireTestClassPrefix: false)
-                },
-              ),
+            reader,
+            const TestGenerator(),
+            additionalGenerators: const {
+              'default': TestGenerator(requireTestClassPrefix: false)
+            },
+          ),
           _throwsArgumentError(
             'Contained an unsupported key "default".',
             'additionalGenerators',
@@ -313,12 +313,12 @@ const TestClass2NameLowerCase = testclass2;
       test('key "" not allowed', () {
         expect(
           () => testAnnotatedElements(
-                reader,
-                const TestGenerator(),
-                additionalGenerators: const {
-                  '': TestGenerator(requireTestClassPrefix: false)
-                },
-              ),
+            reader,
+            const TestGenerator(),
+            additionalGenerators: const {
+              '': TestGenerator(requireTestClassPrefix: false)
+            },
+          ),
           _throwsArgumentError(
             'Contained an unsupported key "".',
             'additionalGenerators',
@@ -329,12 +329,12 @@ const TestClass2NameLowerCase = testclass2;
       test('key `null` not allowed', () {
         expect(
           () => testAnnotatedElements(
-                reader,
-                const TestGenerator(),
-                additionalGenerators: const {
-                  null: TestGenerator(requireTestClassPrefix: false)
-                },
-              ),
+            reader,
+            const TestGenerator(),
+            additionalGenerators: const {
+              null: TestGenerator(requireTestClassPrefix: false)
+            },
+          ),
           _throwsArgumentError(
             'Contained an unsupported key `null`.',
             'additionalGenerators',
