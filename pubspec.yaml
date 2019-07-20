@@ -1,5 +1,5 @@
 name: source_gen_test
-version: 0.1.0+3
+version: 0.1.0+4
 description: >-
   Test support for the source_gen package.
   Includes helpers to make it easy to validate both success and failure cases.
@@ -10,7 +10,7 @@ environment:
   sdk: '>=2.0.0 <3.0.0'
 
 dependencies:
-  analyzer: '>=0.33.3 <0.37.0'
+  analyzer: '>=0.33.3 <0.38.0'
   build: '>=0.12.6 <2.0.0'
   build_test: ^0.10.0
   dart_style: ^1.2.0
