@@ -13,7 +13,7 @@ import 'init_library_reader.dart' show testPackageName;
 
 final _formatter = dart_style.DartFormatter();
 
-final _testAnnotationWarnings = Set<String>();
+final _testAnnotationWarnings = <String>{};
 
 Future<String> generateForElement<T>(
   GeneratorForAnnotation<T> generator,

@@ -13,9 +13,9 @@ List<_ExpectationElement> genAnnotatedElements(
   return allElements.expand((element) {
     final initialValues = _expectationElements(element).toList();
 
-    final explicitConfigSet = Set<String>();
+    final explicitConfigSet = <String>{};
 
-    final duplicateConfigs = Set<String>();
+    final duplicateConfigs = <String>{};
 
     for (var initialValue
         in initialValues.where((te) => te.configurations != null)) {

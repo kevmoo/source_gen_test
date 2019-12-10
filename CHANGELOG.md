@@ -1,3 +1,7 @@
+## 0.1.1-dev
+
+- Require at least Dart 2.2
+
 ## 0.1.0+6
 
 - Support the latest `package:analyzer`.
