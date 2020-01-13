@@ -57,7 +57,7 @@ Future<String> generateForElement<T>(
 
           return false;
         })
-        .where((obj) => obj.type.name == T.toString())
+        .where((obj) => obj.type.element.name == T.toString())
         .toList();
 
     String msg;
@@ -68,7 +68,7 @@ Future<String> generateForElement<T>(
   NOTE: Could not find an annotation that matched
       ${generator.typeChecker}.
     Using a annotation with the same name from the synthetic library instead
-      ${(annotation.type as InterfaceType).element.source.uri}#${annotation.type.name}''';
+      ${(annotation.type as InterfaceType).element.source.uri}#${annotation.type.element.name}''';
     } else {
       msg = '''
   NOTE: Could not find an annotation that matched
