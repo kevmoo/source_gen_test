@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:build/build.dart';
 import 'package:source_gen_test/src/init_library_reader.dart';
 import 'package:test/test.dart';
 
@@ -46,11 +47,12 @@ void main() {
     test('part instead', () async {
       await expectLater(
         () => initializeLibraryReaderForDirectory('test/src', 'test_part.dart'),
-        throwsA(isArgumentError
-            .having((ae) => ae.message, 'message',
-                'Does not seem to reference a Dart library.')
-            .having((ae) => ae.name, 'name', 'targetLibraryFileName')),
+        throwsA(isA<NonLibraryAssetException>().having(
+          (ae) => ae.assetId.toString(),
+          'assetId.toString()',
+          '__test__|lib/test_part.dart',
+        )),
       );
-    }, skip: 'See dart-lang/build#2596');
+    });
   });
 }
