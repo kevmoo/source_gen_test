@@ -12,7 +12,7 @@ class TestAnnotation {
   const TestAnnotation();
 }''';
 
-void main() async {
+Future<void> main() async {
   group('Bad annotations', () {
     test('duplicate configurations for the same member', () async {
       final badReader = await initializeLibraryReader({
@@ -98,12 +98,12 @@ const TestClass2NameLowerCase = testclass2;
   });
 
   group('testAnnotatedElements', () {
-    final validAdditionalGenerators = const {
+    const validAdditionalGenerators = {
       'no-prefix-required': TestGenerator(requireTestClassPrefix: false),
       'vague': TestGenerator(alwaysThrowVagueError: true),
     };
 
-    final validExpectedAnnotatedTests = const [
+    const validExpectedAnnotatedTests = [
       'BadTestClass',
       'BadTestClass',
       'BadTestClass',

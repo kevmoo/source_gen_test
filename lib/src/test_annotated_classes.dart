@@ -3,9 +3,9 @@ import 'dart:async';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
-import 'package:source_gen_test/source_gen_test.dart';
 import 'package:test/test.dart';
 
+import '../source_gen_test.dart';
 import 'annotations.dart';
 import 'build_log_tracking.dart';
 import 'expectation_element.dart';
@@ -226,7 +226,7 @@ class _AnnotatedTest<T> {
   Future<String> _generate() =>
       generateForElement<T>(generator, _libraryReader, _elementName);
 
-  Future<Null> _shouldGenerateTest() async {
+  Future<void> _shouldGenerateTest() async {
     final output = await _generate();
     final exp = expectation as ShouldGenerate;
 
@@ -250,7 +250,7 @@ class _AnnotatedTest<T> {
     clearBuildLog();
   }
 
-  Future<Null> _shouldThrowTest() async {
+  Future<void> _shouldThrowTest() async {
     final exp = expectation as ShouldThrow;
 
     Matcher elementMatcher;
