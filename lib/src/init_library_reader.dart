@@ -19,7 +19,8 @@ Future<LibraryReader> initializeLibraryReaderForDirectory(
 
   try {
     return await initializeLibraryReader(map, targetLibraryFileName);
-  } on ArgumentError catch (e) {
+  } on ArgumentError catch (e) // ignore: avoid_catching_errors
+  {
     if (e.message == 'Must exist as a key in `contentMap`.') {
       throw ArgumentError.value(targetLibraryFileName, 'targetLibraryFileName',
           'Must exist as a file in `sourceDirectory`.');

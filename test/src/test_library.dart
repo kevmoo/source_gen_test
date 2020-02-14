@@ -77,4 +77,4 @@ int badTestFunc() => 42;
   element: false,
 )
 @TestAnnotation()
-final badTestField = 42;
+const badTestField = 42;
