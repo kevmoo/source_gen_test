@@ -1,6 +1,7 @@
 ## 0.1.1-dev
 
 - Require at least Dart 2.2
+- Support the latest `package:build_test`.
 
 ## 0.1.0+6
 
