@@ -6,9 +6,9 @@ import 'package:test/test.dart';
 /// and [InvalidGenerationSourceError.todo] that matches [todoMatcher] and
 /// [InvalidGenerationSourceError.element] that [isNotNull].
 Matcher throwsInvalidGenerationSourceError(
-  messageMatcher, {
-  todoMatcher,
-  elementMatcher,
+  Object messageMatcher, {
+  Object todoMatcher,
+  Object elementMatcher,
 }) {
   var matcher = const TypeMatcher<InvalidGenerationSourceError>()
       .having((e) => e.message, 'message', messageMatcher);
