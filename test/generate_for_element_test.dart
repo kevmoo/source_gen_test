@@ -22,7 +22,7 @@ import 'annotations.dart';
 @ShouldGenerate('', configurations: ['c'])
 @ShouldGenerate('', configurations: ['c'])
 @TestAnnotation()
-class TestClass() {}
+class TestClass{}
 """,
         'annotations.dart': _testAnnotationContent,
       }, 'bad_lib.dart');
@@ -44,7 +44,7 @@ import 'package:source_gen_test/annotations.dart';
 import 'annotations.dart';
 @ShouldGenerate('', configurations: [])
 @TestAnnotation()
-class EmptyConfig() {}
+class EmptyConfig{}
 """,
         'annotations.dart': _testAnnotationContent,
       }, 'bad_lib.dart');
