@@ -6,7 +6,7 @@ description: >-
 repository: https://github.com/kevmoo/source_gen_test
 
 environment:
-  sdk: '>=2.6.0 <3.0.0'
+  sdk: '>=2.10.0 <3.0.0'
 
 dependencies:
   analyzer: '>=0.41.2 <2.0.0'
