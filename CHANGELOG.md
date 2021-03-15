@@ -1,3 +1,7 @@
+## 0.1.1+4
+
+- Support the latest `package:build` and `package:build_test`.
+
 ## 0.1.1+3
 
 - Support the latest `package:analyzer`.
