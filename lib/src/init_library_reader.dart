@@ -57,10 +57,5 @@ Future<LibraryReader> initializeLibraryReader(
     resolverFor: targetLibraryAssetId,
   );
 
-  if (library == null) {
-    throw ArgumentError.value(targetLibraryFileName, 'targetLibraryFileName',
-        'Does not seem to reference a Dart library.');
-  }
-
   return LibraryReader(library);
 }

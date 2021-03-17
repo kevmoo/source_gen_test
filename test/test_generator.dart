@@ -1,5 +1,6 @@
 import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
+import 'package:collection/collection.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'src/test_annotation.dart';
@@ -9,10 +10,9 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
   final bool alwaysThrowVagueError;
 
   const TestGenerator({
-    bool requireTestClassPrefix = true,
-    bool alwaysThrowVagueError = false,
-  })  : alwaysThrowVagueError = alwaysThrowVagueError ?? false,
-        requireTestClassPrefix = requireTestClassPrefix ?? true;
+    this.requireTestClassPrefix = true,
+    this.alwaysThrowVagueError = false,
+  });
 
   @override
   Iterable<String> generateForAnnotatedElement(
@@ -21,14 +21,13 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
       throw InvalidGenerationSourceError('Uh...');
     }
 
-    if (element.name.contains('Bad')) {
+    if (element.name!.contains('Bad')) {
       log.info('This member might be not good.');
     }
 
     if (element is ClassElement) {
-      final unsupportedFunc = element.methods.firstWhere(
-          (me) => me.name.contains('unsupported'),
-          orElse: () => null);
+      final unsupportedFunc = element.methods
+          .firstWhereOrNull((me) => me.name.contains('unsupported'));
 
       if (unsupportedFunc != null) {
         throw InvalidGenerationSourceError(

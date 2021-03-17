@@ -26,9 +26,9 @@ const _defaultConfigurationName = 'default';
 void testAnnotatedElements<T>(
   LibraryReader libraryReader,
   GeneratorForAnnotation<T> defaultGenerator, {
-  Map<String, GeneratorForAnnotation<T>> additionalGenerators,
-  Iterable<String> expectedAnnotatedTests,
-  Iterable<String> defaultConfiguration,
+  Map<String, GeneratorForAnnotation<T>>? additionalGenerators,
+  Iterable<String>? expectedAnnotatedTests,
+  Iterable<String>? defaultConfiguration,
 }) {
   for (var entry in getAnnotatedClasses<T>(
     libraryReader,
@@ -47,9 +47,9 @@ void testAnnotatedElements<T>(
 List<_AnnotatedTest> getAnnotatedClasses<T>(
   LibraryReader libraryReader,
   GeneratorForAnnotation<T> defaultGenerator, {
-  @required Map<String, GeneratorForAnnotation<T>> additionalGenerators,
-  @required Iterable<String> expectedAnnotatedTests,
-  @required Iterable<String> defaultConfiguration,
+  Map<String, GeneratorForAnnotation<T>>? additionalGenerators,
+  Iterable<String>? expectedAnnotatedTests,
+  Iterable<String>? defaultConfiguration,
 }) {
   final generators = <String, GeneratorForAnnotation<T>>{
     _defaultConfigurationName: defaultGenerator
@@ -99,7 +99,8 @@ List<_AnnotatedTest> getAnnotatedClasses<T>(
 
   final unusedConfigurations = generators.keys.toSet();
   for (var annotatedElement in annotatedElements) {
-    unusedConfigurations.removeAll(annotatedElement.expectation.configurations);
+    unusedConfigurations
+        .removeAll(annotatedElement.expectation.configurations!);
   }
   if (unusedConfigurations.isNotEmpty) {
     if (unusedConfigurations.contains(_defaultConfigurationName)) {
@@ -150,7 +151,7 @@ List<_AnnotatedTest> getAnnotatedClasses<T>(
   final mapMissingConfigs = <String, Set<String>>{};
 
   for (final entry in annotatedElements) {
-    for (var configuration in entry.expectation.configurations) {
+    for (var configuration in entry.expectation.configurations!) {
       final generator = generators[configuration];
 
       if (generator == null) {
@@ -253,7 +254,7 @@ class _AnnotatedTest<T> {
   Future<void> _shouldThrowTest() async {
     final exp = expectation as ShouldThrow;
 
-    Matcher elementMatcher;
+    Matcher? elementMatcher;
 
     if (exp.element == null || exp.element is String) {
       String expectedElementName;

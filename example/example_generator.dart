@@ -8,15 +8,15 @@ class ExampleGenerator extends GeneratorForAnnotation<ExampleAnnotation> {
   final bool requireTestClassPrefix;
 
   const ExampleGenerator({
-    bool requireTestClassPrefix = true,
-  }) : requireTestClassPrefix = requireTestClassPrefix ?? true;
+    this.requireTestClassPrefix = true,
+  });
 
   @override
   Iterable<String> generateForAnnotatedElement(
       Element element, ConstantReader annotation, BuildStep buildStep) sync* {
     assert(!annotation.isNull, 'The source annotation should be set!');
 
-    if (element.name.contains('Bad')) {
+    if (element.name!.contains('Bad')) {
       log.info('This member might be not good.');
     }
 
