@@ -325,27 +325,11 @@ const TestClass2NameLowerCase = testclass2;
           ),
         );
       });
-
-      test('key `null` not allowed', () {
-        expect(
-          () => testAnnotatedElements(
-            reader,
-            const TestGenerator(),
-            additionalGenerators: const {
-              null: TestGenerator(requireTestClassPrefix: false)
-            },
-          ),
-          _throwsArgumentError(
-            'Contained an unsupported key `null`.',
-            'additionalGenerators',
-          ),
-        );
-      });
     });
   });
 }
 
-Matcher _throwsArgumentError(matcher, [String name]) => throwsA(
+Matcher _throwsArgumentError(matcher, [String? name]) => throwsA(
       isArgumentError
           .having((e) => e.message, 'message', matcher)
           .having((ae) => ae.name, 'name', name),

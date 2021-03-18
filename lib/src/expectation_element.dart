@@ -8,7 +8,7 @@ import 'annotations.dart';
 List<_ExpectationElement> genAnnotatedElements(
     LibraryReader libraryReader, Set<String> configDefaults) {
   final allElements = libraryReader.allElements.toList(growable: false)
-    ..sort((a, b) => a.name.compareTo(b.name));
+    ..sort((a, b) => a.name!.compareTo(b.name!));
 
   return allElements.expand((element) {
     final initialValues = _expectationElements(element).toList();
@@ -17,16 +17,17 @@ List<_ExpectationElement> genAnnotatedElements(
 
     final duplicateConfigs = <String>{};
 
-    for (var initialValue
-        in initialValues.where((te) => te.configurations != null)) {
-      if (initialValue.configurations.isEmpty) {
+    for (var configs in initialValues
+        .map((e) => e.configurations)
+        .whereType<Iterable<String>>()) {
+      if (configs.isEmpty) {
         throw InvalidGenerationSourceError(
           '`configuration` cannot be empty.',
           todo: 'Leave it `null`.',
           element: element,
         );
       }
-      for (var config in initialValue.configurations) {
+      for (var config in configs) {
         if (!explicitConfigSet.add(config)) {
           duplicateConfigs.add(config);
         }
@@ -51,9 +52,9 @@ List<_ExpectationElement> genAnnotatedElements(
             '$element $configDefaults $explicitConfigSet');
         te = te.replaceConfiguration(newConfigSet);
       }
-      assert(te.configurations.isNotEmpty);
+      assert(te.configurations!.isNotEmpty);
 
-      return _ExpectationElement._(te, element.name);
+      return _ExpectationElement._(te, element.name!);
     });
   }).toList();
 }
@@ -75,9 +76,7 @@ class _ExpectationElement {
   final TestExpectation expectation;
   final String elementName;
 
-  _ExpectationElement._(this.expectation, this.elementName)
-      : assert(expectation != null),
-        assert(elementName != null);
+  _ExpectationElement._(this.expectation, this.elementName);
 }
 
 ShouldGenerate _shouldGenerate(DartObject obj) {
@@ -94,7 +93,7 @@ ShouldThrow _shouldThrow(DartObject obj) {
   final reader = ConstantReader(obj);
   return ShouldThrow(
     reader.read('errorMessage').stringValue,
-    todo: reader.read('todo').literalValue as String,
+    todo: reader.read('todo').literalValue as String?,
     element: reader.read('element').literalValue,
     expectedLogItems: _expectedLogItems(reader),
     configurations: _configurations(reader),
@@ -104,14 +103,14 @@ ShouldThrow _shouldThrow(DartObject obj) {
 List<String> _expectedLogItems(ConstantReader reader) => reader
     .read('expectedLogItems')
     .listValue
-    .map((obj) => obj.toStringValue())
+    .map((obj) => obj.toStringValue()!)
     .toList();
 
-Set<String> _configurations(ConstantReader reader) {
+Set<String>? _configurations(ConstantReader reader) {
   final field = reader.read('configurations');
   if (field.isNull) {
     return null;
   }
 
-  return field.listValue.map((obj) => obj.toStringValue()).toSet();
+  return field.listValue.map((obj) => obj.toStringValue()!).toSet();
 }

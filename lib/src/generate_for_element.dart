@@ -4,6 +4,7 @@ import 'dart:async';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
+import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart' as dart_style;
 import 'package:source_gen/source_gen.dart';
 import 'package:source_gen/src/output_helpers.dart'
@@ -42,12 +43,11 @@ Future<String> generateForElement<T>(
     }
   }
 
-  var annotation =
-      generator.typeChecker.firstAnnotationOf(element, throwOnUnresolved: true);
+  var annotation = generator.typeChecker.firstAnnotationOf(element);
 
   if (annotation == null) {
     final annotationFromTestLib = element.metadata
-        .map((ea) => ea.computeConstantValue())
+        .map((ea) => ea.computeConstantValue()!)
         .where((obj) {
           if (obj.type is InterfaceType) {
             final uri = (obj.type as InterfaceType).element.source.uri;
@@ -57,7 +57,7 @@ Future<String> generateForElement<T>(
 
           return false;
         })
-        .where((obj) => obj.type.element.name == T.toString())
+        .where((obj) => obj.type!.element!.name == T.toString())
         .toList();
 
     String msg;
@@ -68,7 +68,7 @@ Future<String> generateForElement<T>(
   NOTE: Could not find an annotation that matched
       ${generator.typeChecker}.
     Using a annotation with the same name from the synthetic library instead
-      ${(annotation.type as InterfaceType).element.source.uri}#${annotation.type.element.name}''';
+      ${(annotation.type as InterfaceType).element.source.uri}#${annotation.type!.element!.name}''';
     } else {
       msg = '''
   NOTE: Could not find an annotation that matched
@@ -81,10 +81,17 @@ Future<String> generateForElement<T>(
     }
   }
 
-  final generatedStream = normalizeGeneratorOutput(generator
-      .generateForAnnotatedElement(element, ConstantReader(annotation), null));
+  final generatedStream = normalizeGeneratorOutput(
+    generator.generateForAnnotatedElement(
+        element, ConstantReader(annotation), _MockBuildStep()),
+  );
 
   final generated = await generatedStream.join('\n\n');
 
   return _formatter.format(generated);
+}
+
+class _MockBuildStep extends BuildStep {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }

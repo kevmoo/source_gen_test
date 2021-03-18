@@ -7,10 +7,10 @@
 /// Non-public, implementation base class of  [ShouldGenerate] and
 /// [ShouldThrow].
 abstract class TestExpectation {
-  final Iterable<String> configurations;
+  final Iterable<String>? configurations;
   final List<String> expectedLogItems;
 
-  const TestExpectation._(this.configurations, List<String> expectedLogItems)
+  const TestExpectation._(this.configurations, List<String>? expectedLogItems)
       : expectedLogItems = expectedLogItems ?? const [];
 
   TestExpectation replaceConfiguration(Iterable<String> newConfiguration);
@@ -26,20 +26,18 @@ class ShouldGenerate extends TestExpectation {
   const ShouldGenerate(
     this.expectedOutput, {
     this.contains = false,
-    Iterable<String> configurations,
-    List<String> expectedLogItems,
+    Iterable<String>? configurations,
+    List<String>? expectedLogItems,
   }) : super._(configurations, expectedLogItems);
 
   @override
-  TestExpectation replaceConfiguration(Iterable<String> newConfiguration) {
-    assert(newConfiguration != null);
-    return ShouldGenerate(
-      expectedOutput,
-      contains: contains,
-      configurations: newConfiguration,
-      expectedLogItems: expectedLogItems,
-    );
-  }
+  TestExpectation replaceConfiguration(Iterable<String> newConfiguration) =>
+      ShouldGenerate(
+        expectedOutput,
+        contains: contains,
+        configurations: newConfiguration,
+        expectedLogItems: expectedLogItems,
+      );
 }
 
 /// Specifies that an [InvalidGenerationSourceError] is expected to be thrown
@@ -48,7 +46,7 @@ class ShouldGenerate extends TestExpectation {
 /// Must be used with [testAnnotatedElements].
 class ShouldThrow extends TestExpectation {
   final String errorMessage;
-  final String todo;
+  final String? todo;
 
   /// If `null`, expects [InvalidGenerationSourceError.element] to match the
   /// element annotated with [ShouldThrow].
@@ -66,20 +64,18 @@ class ShouldThrow extends TestExpectation {
     this.errorMessage, {
     this.todo,
     element = true,
-    Iterable<String> configurations,
-    List<String> expectedLogItems,
+    Iterable<String>? configurations,
+    List<String>? expectedLogItems,
   })  : element = element ?? true,
         super._(configurations, expectedLogItems);
 
   @override
-  TestExpectation replaceConfiguration(Iterable<String> newConfiguration) {
-    assert(newConfiguration != null);
-    return ShouldThrow(
-      errorMessage,
-      configurations: newConfiguration,
-      element: element,
-      expectedLogItems: expectedLogItems,
-      todo: todo,
-    );
-  }
+  TestExpectation replaceConfiguration(Iterable<String> newConfiguration) =>
+      ShouldThrow(
+        errorMessage,
+        configurations: newConfiguration,
+        element: element,
+        expectedLogItems: expectedLogItems,
+        todo: todo,
+      );
 }

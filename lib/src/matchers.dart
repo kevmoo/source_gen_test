@@ -7,15 +7,14 @@ import 'package:test/test.dart';
 /// [InvalidGenerationSourceError.element] that [isNotNull].
 Matcher throwsInvalidGenerationSourceError(
   Object messageMatcher, {
-  Object todoMatcher,
-  Object elementMatcher,
+  Object? todoMatcher,
+  Object? elementMatcher,
 }) {
   var matcher = const TypeMatcher<InvalidGenerationSourceError>()
       .having((e) => e.message, 'message', messageMatcher);
 
   if (elementMatcher != null) {
-    matcher = matcher.having(
-        (e) => e.element, 'element', elementMatcher ?? isNotNull);
+    matcher = matcher.having((e) => e.element, 'element', elementMatcher);
   }
   if (todoMatcher != null) {
     matcher = matcher.having((e) => e.todo, 'todo', todoMatcher);

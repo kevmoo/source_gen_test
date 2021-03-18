@@ -1,3 +1,8 @@
+## 1.0.0
+
+- Migrate to null safety.
+- Require Dart `2.12.0`.
+
 ## 0.1.1+4
 
 - Support the latest `package:build` and `package:build_test`.
