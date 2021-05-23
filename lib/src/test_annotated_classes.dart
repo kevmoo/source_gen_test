@@ -7,9 +7,7 @@ import 'package:test/test.dart';
 
 import '../source_gen_test.dart';
 import 'annotations.dart';
-import 'build_log_tracking.dart';
 import 'expectation_element.dart';
-import 'generate_for_element.dart';
 
 const _defaultConfigurationName = 'default';
 
