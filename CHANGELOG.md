@@ -1,3 +1,7 @@
+## 1.0.1
+
+- Support the latest `package:analyzer`.
+
 ## 1.0.0
 
 - Migrate to null safety.
