@@ -10,7 +10,9 @@ void main() {
   group('initializeLibraryReaderForDirectory', () {
     test('valid', () async {
       final reader = await initializeLibraryReaderForDirectory(
-          'test/src', 'test_library.dart');
+        'test/src',
+        'test_library.dart',
+      );
 
       expect(
         reader.allElements.map((e) => e.name),
@@ -29,29 +31,41 @@ void main() {
     test('bad library name', () async {
       await expectLater(
         () => initializeLibraryReaderForDirectory(
-            'test/src', 'test_library_bad.dart'),
-        throwsA(isArgumentError
-            .having((ae) => ae.message, 'message',
-                'Must exist as a file in `sourceDirectory`.')
-            .having((ae) => ae.name, 'name', 'targetLibraryFileName')),
+          'test/src',
+          'test_library_bad.dart',
+        ),
+        throwsA(
+          isArgumentError
+              .having(
+                (ae) => ae.message,
+                'message',
+                'Must exist as a file in `sourceDirectory`.',
+              )
+              .having((ae) => ae.name, 'name', 'targetLibraryFileName'),
+        ),
       );
     });
 
     test('non-existant directory', () async {
       await expectLater(
-          () => initializeLibraryReaderForDirectory(
-              'test/not_src', 'test_library.dart'),
-          throwsA(const TypeMatcher<FileSystemException>()));
+        () => initializeLibraryReaderForDirectory(
+          'test/not_src',
+          'test_library.dart',
+        ),
+        throwsA(const TypeMatcher<FileSystemException>()),
+      );
     });
 
     test('part instead', () async {
       await expectLater(
         () => initializeLibraryReaderForDirectory('test/src', 'test_part.dart'),
-        throwsA(isA<NonLibraryAssetException>().having(
-          (ae) => ae.assetId.toString(),
-          'assetId.toString()',
-          '__test__|lib/test_part.dart',
-        )),
+        throwsA(
+          isA<NonLibraryAssetException>().having(
+            (ae) => ae.assetId.toString(),
+            'assetId.toString()',
+            '__test__|lib/test_part.dart',
+          ),
+        ),
       );
     });
   });

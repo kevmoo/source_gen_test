@@ -16,7 +16,10 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
 
   @override
   Iterable<String> generateForAnnotatedElement(
-      Element element, ConstantReader annotation, BuildStep buildStep) sync* {
+    Element element,
+    ConstantReader annotation,
+    BuildStep buildStep,
+  ) sync* {
     if (alwaysThrowVagueError) {
       throw InvalidGenerationSourceError('Uh...');
     }

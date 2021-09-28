@@ -55,13 +55,19 @@ List<_AnnotatedTest> getAnnotatedClasses<T>(
   if (additionalGenerators != null) {
     for (var invalidKey in const [_defaultConfigurationName, '']) {
       if (additionalGenerators.containsKey(invalidKey)) {
-        throw ArgumentError.value(additionalGenerators, 'additionalGenerators',
-            'Contained an unsupported key "$invalidKey".');
+        throw ArgumentError.value(
+          additionalGenerators,
+          'additionalGenerators',
+          'Contained an unsupported key "$invalidKey".',
+        );
       }
     }
     if (additionalGenerators.containsKey(null)) {
-      throw ArgumentError.value(additionalGenerators, 'additionalGenerators',
-          'Contained an unsupported key `null`.');
+      throw ArgumentError.value(
+        additionalGenerators,
+        'additionalGenerators',
+        'Contained an unsupported key `null`.',
+      );
     }
     generators.addAll(additionalGenerators);
   }
@@ -159,13 +165,15 @@ List<_AnnotatedTest> getAnnotatedClasses<T>(
         continue;
       }
 
-      result.add(_AnnotatedTest<T>._(
-        libraryReader,
-        generator,
-        configuration,
-        entry.elementName,
-        entry.expectation,
-      ));
+      result.add(
+        _AnnotatedTest<T>._(
+          libraryReader,
+          generator,
+          configuration,
+          entry.elementName,
+          entry.expectation,
+        ),
+      );
     }
   }
 

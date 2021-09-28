@@ -20,7 +20,8 @@ void initializeBuildLogTracking() {
     _buildLogView = UnmodifiableListView(_buildLog!);
   } else {
     throw StateError(
-        '`initializeBuildLogTracking` should only be called once.');
+      '`initializeBuildLogTracking` should only be called once.',
+    );
   }
   // ignore: cancel_subscriptions
   StreamSubscription? logSubscription;
