@@ -26,7 +26,10 @@ Future<String> generateForElement<T>(
 
   if (elements.isEmpty) {
     throw ArgumentError.value(
-        name, 'name', 'Could not find an element with name `$name`.');
+      name,
+      'name',
+      'Could not find an element with name `$name`.',
+    );
   }
 
   Element element;
@@ -83,7 +86,10 @@ Future<String> generateForElement<T>(
 
   final generatedStream = normalizeGeneratorOutput(
     generator.generateForAnnotatedElement(
-        element, ConstantReader(annotation), _MockBuildStep()),
+      element,
+      ConstantReader(annotation),
+      _MockBuildStep(),
+    ),
   );
 
   final generated = await generatedStream.join('\n\n');

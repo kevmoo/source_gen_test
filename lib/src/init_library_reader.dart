@@ -11,19 +11,26 @@ const testPackageName = '__test__';
 /// Returns a [LibraryReader] for library specified by [targetLibraryFileName]
 /// using the files in [sourceDirectory].
 Future<LibraryReader> initializeLibraryReaderForDirectory(
-    String sourceDirectory, String targetLibraryFileName) async {
-  final map = Map.fromEntries(Directory(sourceDirectory)
-      .listSync()
-      .whereType<File>()
-      .map((f) => MapEntry(p.basename(f.path), f.readAsStringSync())));
+  String sourceDirectory,
+  String targetLibraryFileName,
+) async {
+  final map = Map.fromEntries(
+    Directory(sourceDirectory)
+        .listSync()
+        .whereType<File>()
+        .map((f) => MapEntry(p.basename(f.path), f.readAsStringSync())),
+  );
 
   try {
     return await initializeLibraryReader(map, targetLibraryFileName);
   } on ArgumentError catch (e) // ignore: avoid_catching_errors
   {
     if (e.message == 'Must exist as a key in `contentMap`.') {
-      throw ArgumentError.value(targetLibraryFileName, 'targetLibraryFileName',
-          'Must exist as a file in `sourceDirectory`.');
+      throw ArgumentError.value(
+        targetLibraryFileName,
+        'targetLibraryFileName',
+        'Must exist as a file in `sourceDirectory`.',
+      );
     }
     rethrow;
   }
@@ -35,10 +42,15 @@ Future<LibraryReader> initializeLibraryReaderForDirectory(
 /// [contentMap] contains the Dart file contents to from which to create the
 /// library stored as filename / file content pairs.
 Future<LibraryReader> initializeLibraryReader(
-    Map<String, String> contentMap, String targetLibraryFileName) async {
+  Map<String, String> contentMap,
+  String targetLibraryFileName,
+) async {
   if (!contentMap.containsKey(targetLibraryFileName)) {
-    throw ArgumentError.value(targetLibraryFileName, 'targetLibraryFileName',
-        'Must exist as a key in `contentMap`.');
+    throw ArgumentError.value(
+      targetLibraryFileName,
+      'targetLibraryFileName',
+      'Must exist as a key in `contentMap`.',
+    );
   }
 
   String assetIdForFile(String fileName) => '$testPackageName|lib/$fileName';

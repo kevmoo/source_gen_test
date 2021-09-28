@@ -13,7 +13,10 @@ class ExampleGenerator extends GeneratorForAnnotation<ExampleAnnotation> {
 
   @override
   Iterable<String> generateForAnnotatedElement(
-      Element element, ConstantReader annotation, BuildStep buildStep) sync* {
+    Element element,
+    ConstantReader annotation,
+    BuildStep buildStep,
+  ) sync* {
     assert(!annotation.isNull, 'The source annotation should be set!');
 
     if (element.name!.contains('Bad')) {

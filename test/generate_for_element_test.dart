@@ -15,8 +15,9 @@ class TestAnnotation {
 Future<void> main() async {
   group('Bad annotations', () {
     test('duplicate configurations for the same member', () async {
-      final badReader = await initializeLibraryReader({
-        'bad_lib.dart': r"""
+      final badReader = await initializeLibraryReader(
+        {
+          'bad_lib.dart': r"""
 import 'package:source_gen_test/annotations.dart';
 import 'annotations.dart';
 @ShouldGenerate('', configurations: ['c'])
@@ -24,8 +25,10 @@ import 'annotations.dart';
 @TestAnnotation()
 class TestClass{}
 """,
-        'annotations.dart': _testAnnotationContent,
-      }, 'bad_lib.dart');
+          'annotations.dart': _testAnnotationContent,
+        },
+        'bad_lib.dart',
+      );
 
       expect(
         () => testAnnotatedElements(badReader, const TestGenerator()),
@@ -38,16 +41,19 @@ class TestClass{}
     });
 
     test('annotation with no configuration', () async {
-      final badReader = await initializeLibraryReader({
-        'bad_lib.dart': r"""
+      final badReader = await initializeLibraryReader(
+        {
+          'bad_lib.dart': r"""
 import 'package:source_gen_test/annotations.dart';
 import 'annotations.dart';
 @ShouldGenerate('', configurations: [])
 @TestAnnotation()
 class EmptyConfig{}
 """,
-        'annotations.dart': _testAnnotationContent,
-      }, 'bad_lib.dart');
+          'annotations.dart': _testAnnotationContent,
+        },
+        'bad_lib.dart',
+      );
 
       expect(
         () => testAnnotatedElements(badReader, const TestGenerator()),
@@ -60,29 +66,37 @@ class EmptyConfig{}
   });
 
   final reader = await initializeLibraryReaderForDirectory(
-      'test/src', 'test_library.dart');
+    'test/src',
+    'test_library.dart',
+  );
 
   group('generateForElement', () {
     test('TestClass1', () async {
       final output =
           await generateForElement(const TestGenerator(), reader, 'TestClass1');
       printOnFailure(output);
-      expect(output, r'''
+      expect(
+        output,
+        r'''
 const TestClass1NameLength = 10;
 
 const TestClass1NameLowerCase = testclass1;
-''');
+''',
+      );
     });
 
     test('TestClass2', () async {
       final output =
           await generateForElement(const TestGenerator(), reader, 'TestClass2');
       printOnFailure(output);
-      expect(output, r'''
+      expect(
+        output,
+        r'''
 const TestClass2NameLength = 10;
 
 const TestClass2NameLowerCase = testclass2;
-''');
+''',
+      );
     });
   });
 
@@ -271,27 +285,30 @@ const TestClass2NameLowerCase = testclass2;
             defaultConfiguration: ['default', 'no-prefix-required'],
           ),
           _throwsArgumentError(
-              'Some of the specified generators were not used for their '
-              'corresponding configurations: "extra".\n'
-              'Remove the entry from `additionalGenerators` or update '
-              '`defaultConfiguration`.'),
+            'Some of the specified generators were not used for their '
+            'corresponding configurations: "extra".\n'
+            'Remove the entry from `additionalGenerators` or update '
+            '`defaultConfiguration`.',
+          ),
         );
       });
 
       test('missing a specified generator fails', () {
         expect(
-            () => testAnnotatedElements(
-                  reader,
-                  const TestGenerator(),
-                ),
-            _throwsArgumentError(
-                'There are elements defined with configurations with no '
-                'associated generator provided.\n'
-                '`BadTestClass`: "no-prefix-required", "vague"; '
-                '`TestClass1`: "no-prefix-required", "vague"; '
-                '`TestClass2`: "vague"; '
-                '`badTestField`: "vague"; '
-                '`badTestFunc`: "vague"'));
+          () => testAnnotatedElements(
+            reader,
+            const TestGenerator(),
+          ),
+          _throwsArgumentError(
+            'There are elements defined with configurations with no '
+            'associated generator provided.\n'
+            '`BadTestClass`: "no-prefix-required", "vague"; '
+            '`TestClass1`: "no-prefix-required", "vague"; '
+            '`TestClass2`: "vague"; '
+            '`badTestField`: "vague"; '
+            '`badTestFunc`: "vague"',
+          ),
+        );
       });
 
       test('key "default" not allowed', () {

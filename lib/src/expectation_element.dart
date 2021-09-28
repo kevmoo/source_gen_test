@@ -5,7 +5,9 @@ import 'package:source_gen/source_gen.dart';
 import 'annotations.dart';
 
 List<_ExpectationElement> genAnnotatedElements(
-    LibraryReader libraryReader, Set<String> configDefaults) {
+  LibraryReader libraryReader,
+  Set<String> configDefaults,
+) {
   final allElements = libraryReader.allElements.toList(growable: false)
     ..sort((a, b) => a.name!.compareTo(b.name!));
 
@@ -47,8 +49,10 @@ List<_ExpectationElement> genAnnotatedElements(
       if (te.configurations == null) {
         final newConfigSet = configDefaults.difference(explicitConfigSet);
         // TODO: need testing and a "real" error here!
-        assert(newConfigSet.isNotEmpty,
-            '$element $configDefaults $explicitConfigSet');
+        assert(
+          newConfigSet.isNotEmpty,
+          '$element $configDefaults $explicitConfigSet',
+        );
         te = te.replaceConfiguration(newConfigSet);
       }
       assert(te.configurations!.isNotEmpty);

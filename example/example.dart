@@ -9,7 +9,9 @@ import 'src/example_annotation.dart';
 
 Future<void> main() async {
   final reader = await initializeLibraryReaderForDirectory(
-      'example/src', 'example_test_src.dart');
+    'example/src',
+    'example_test_src.dart',
+  );
 
   initializeBuildLogTracking();
   testAnnotatedElements<ExampleAnnotation>(
