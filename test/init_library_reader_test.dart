@@ -17,6 +17,7 @@ void main() {
       expect(
         reader.allElements.map((e) => e.name),
         unorderedMatches([
+          '', // this is the library
           'BadTestClass',
           'badTestField',
           'badTestField',
