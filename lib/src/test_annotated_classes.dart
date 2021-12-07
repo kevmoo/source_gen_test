@@ -5,9 +5,11 @@ import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 
-import '../source_gen_test.dart';
 import 'annotations.dart';
+import 'build_log_tracking.dart';
 import 'expectation_element.dart';
+import 'generate_for_element.dart';
+import 'matchers.dart';
 
 const _defaultConfigurationName = 'default';
 
