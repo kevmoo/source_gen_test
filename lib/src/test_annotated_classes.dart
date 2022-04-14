@@ -44,7 +44,7 @@ void testAnnotatedElements<T>(
 /// An implementation member only exposed to make it easier to test
 /// [testAnnotatedElements] without registering any tests.
 @visibleForTesting
-List<_AnnotatedTest> getAnnotatedClasses<T>(
+List<AnnotatedTest> getAnnotatedClasses<T>(
   LibraryReader libraryReader,
   GeneratorForAnnotation<T> defaultGenerator, {
   Map<String, GeneratorForAnnotation<T>>? additionalGenerators,
@@ -151,7 +151,7 @@ List<_AnnotatedTest> getAnnotatedClasses<T>(
     }
   }
 
-  final result = <_AnnotatedTest<T>>[];
+  final result = <AnnotatedTest<T>>[];
 
   // element name -> missing configs
   final mapMissingConfigs = <String, Set<String>>{};
@@ -168,7 +168,7 @@ List<_AnnotatedTest> getAnnotatedClasses<T>(
       }
 
       result.add(
-        _AnnotatedTest<T>._(
+        AnnotatedTest<T>._(
           libraryReader,
           generator,
           configuration,
@@ -198,7 +198,8 @@ List<_AnnotatedTest> getAnnotatedClasses<T>(
   return result;
 }
 
-class _AnnotatedTest<T> {
+@visibleForTesting
+class AnnotatedTest<T> {
   final GeneratorForAnnotation<T> generator;
   final String configuration;
   final LibraryReader _libraryReader;
@@ -213,7 +214,7 @@ class _AnnotatedTest<T> {
     return value;
   }
 
-  _AnnotatedTest._(
+  AnnotatedTest._(
     this._libraryReader,
     this.generator,
     this.configuration,

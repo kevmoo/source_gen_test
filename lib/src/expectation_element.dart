@@ -1,10 +1,11 @@
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
+import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
 import 'annotations.dart';
 
-List<_ExpectationElement> genAnnotatedElements(
+List<ExpectationElement> genAnnotatedElements(
   LibraryReader libraryReader,
   Set<String> configDefaults,
 ) {
@@ -57,7 +58,7 @@ List<_ExpectationElement> genAnnotatedElements(
       }
       assert(te.configurations!.isNotEmpty);
 
-      return _ExpectationElement._(te, element.name!);
+      return ExpectationElement._(te, element.name!);
     });
   }).toList();
 }
@@ -75,11 +76,12 @@ Iterable<TestExpectation> _expectationElements(Element element) sync* {
   }
 }
 
-class _ExpectationElement {
+@visibleForTesting
+class ExpectationElement {
   final TestExpectation expectation;
   final String elementName;
 
-  _ExpectationElement._(this.expectation, this.elementName);
+  ExpectationElement._(this.expectation, this.elementName);
 }
 
 ShouldGenerate _shouldGenerate(DartObject obj) {
