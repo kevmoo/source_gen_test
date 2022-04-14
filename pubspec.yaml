@@ -20,4 +20,4 @@ dependencies:
 
 dev_dependencies:
   collection: ^1.15.0
-  lints: ^2.0.0
+  lints: ^1.0.0
