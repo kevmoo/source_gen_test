@@ -244,7 +244,7 @@ class AnnotatedTest<T> {
       expect(
         output,
         exp.contains
-            ? contains(exp.expectedOutput)
+            ? contains(RegExp(exp.expectedOutput))
             : equals(exp.expectedOutput),
       );
     } on TestFailure {
