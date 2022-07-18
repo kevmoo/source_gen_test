@@ -1,3 +1,7 @@
+## 1.0.4
+
+- Support regex when `ShouldGenerate.contains` is `true`.
+
 ## 1.0.3
 
 - Support the latest `package:analyzer`.
