@@ -1,15 +1,15 @@
 name: source_gen_test
-version: 1.0.3
+version: 1.0.4
 description: >-
   Test support for the source_gen package.
   Includes helpers to make it easy to validate both success and failure cases.
 repository: https://github.com/kevmoo/source_gen_test
 
 environment:
-  sdk: '>=2.12.0 <3.0.0'
+  sdk: '>=2.17.0 <3.0.0'
 
 dependencies:
-  analyzer: '>=2.1.0 <5.0.0'
+  analyzer: '>=4.6.0 <6.0.0'
   build: ^2.0.0
   build_test: ^2.0.0
   dart_style: ^2.0.0
@@ -20,4 +20,4 @@ dependencies:
 
 dev_dependencies:
   collection: ^1.15.0
-  lints: ^1.0.0
+  lints: ^2.0.0
