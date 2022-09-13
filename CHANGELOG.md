@@ -1,3 +1,8 @@
+## 1.0.4
+
+- Require `analyzer: '>=4.6.0 <6.0.0'`
+- Require `sdk: '>=2.17.0 <3.0.0'`
+
 ## 1.0.3
 
 - Support the latest `package:analyzer`.
