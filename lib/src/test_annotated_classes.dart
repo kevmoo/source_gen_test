@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:analyzer/dart/element/element.dart';
 import 'package:meta/meta.dart';
+import 'package:path/path.dart' as p;
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 
@@ -9,9 +11,11 @@ import 'annotations.dart';
 import 'build_log_tracking.dart';
 import 'expectation_element.dart';
 import 'generate_for_element.dart';
+import 'init_library_reader.dart';
 import 'matchers.dart';
 
 const _defaultConfigurationName = 'default';
+const _updateGoldensVariable = 'SOURCE_GEN_TEST_UPDATE_GOLDENS';
 
 /// If [defaultConfiguration] is not provided or `null`, "default" and the keys
 /// from [additionalGenerators] (if provided) are used.
@@ -226,6 +230,9 @@ class AnnotatedTest<T> {
     if (expectation is ShouldGenerate) {
       test(_testName, _shouldGenerateTest);
       return;
+    } else if (expectation is ShouldGenerateGolden) {
+      test(_testName, _shouldGenerateGoldenTest);
+      return;
     } else if (expectation is ShouldThrow) {
       test(_testName, _shouldThrowTest);
       return;
@@ -258,6 +265,73 @@ class AnnotatedTest<T> {
       reason: 'The expected log items do not match.',
     );
     clearBuildLog();
+  }
+
+  Future<void> _shouldGenerateGoldenTest() async {
+    final output = await _generate();
+    final exp = expectation as ShouldGenerateGolden;
+
+    if (_libraryReader is! PathAwareLibraryReader) {
+      throw TestFailure(
+        'Cannot run the test because _libraryReader does not contain '
+        'the directory information, and so the golden cannot be located. '
+        'Use initializeLibraryReaderForDirectory() to automatically set it.',
+      );
+    }
+
+    final reader = _libraryReader as PathAwareLibraryReader;
+    final path = p.join(reader.directory, exp.expectedOutputFileName);
+    final testOutput = _padOutputForGolden(output);
+
+    try {
+      if (Platform.environment[_updateGoldensVariable] == '1') {
+        File(path).writeAsStringSync(testOutput);
+      } else {
+        final content = File(path).readAsStringSync();
+        expect(
+          testOutput,
+          exp.contains ? contains(content) : equals(content),
+        );
+      }
+    } on FileSystemException catch (ex) {
+      throw TestFailure(
+        'Cannot open file: ${exp.expectedOutputFileName}\n'
+        'Absolute path:    ${Directory.current.path}/$path\n'
+        '$ex',
+      );
+    } on TestFailure {
+      printOnFailure("ACTUAL CONTENT:\nr'''\n$output'''");
+      rethrow;
+    }
+
+    expect(
+      buildLogItems,
+      exp.expectedLogItems,
+      reason: 'The expected log items do not match.',
+    );
+    clearBuildLog();
+  }
+
+  String _padOutputForGolden(String output) {
+    final exp = expectation as ShouldGenerateGolden;
+
+    if (exp.partOf != null) {
+      return "part of '${exp.partOf}';\n\n$output";
+    }
+
+    if (exp.partOfCurrent) {
+      final reader = _libraryReader as PathAwareLibraryReader;
+      final outputDirectory =
+          File(p.join(reader.directory, exp.expectedOutputFileName)).parent;
+
+      final path = p.relative(
+        reader.path,
+        from: outputDirectory.path,
+      );
+      return "part of '$path';\n\n$output";
+    }
+
+    return output;
   }
 
   Future<void> _shouldThrowTest() async {

@@ -14,6 +14,8 @@ void main() {
         'test_library.dart',
       );
 
+      expect(reader.directory, 'test/src');
+      expect(reader.fileName, 'test_library.dart');
       expect(
         reader.allElements.map((e) => e.name),
         unorderedMatches([
@@ -24,6 +26,9 @@ void main() {
           'badTestFunc',
           'TestClass1',
           'TestClass2',
+          'TestClassGoldenNoPart',
+          'TestClassGoldenPartOf',
+          'TestClassGoldenPartOfCurrent',
           'TestClassWithBadMember',
         ]),
       );
