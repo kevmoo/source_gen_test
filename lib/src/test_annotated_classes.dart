@@ -297,10 +297,17 @@ class AnnotatedTest<T> {
       throw TestFailure(
         'Cannot open file: ${exp.expectedOutputFileName}\n'
         'Absolute path:    ${Directory.current.path}/$path\n'
-        '$ex',
+        '$ex\n\n'
+        'To create or update all golden files, set the environment variable '
+        '$_updateGoldensVariable=1\n\n'
+        'Make sure the directory exists and you can write the file in it.'
       );
     } on TestFailure {
       printOnFailure("ACTUAL CONTENT:\nr'''\n$output'''");
+      printOnFailure(
+        'To update all golden files, set the environment variable '
+        '$_updateGoldensVariable=1',
+      );
       rethrow;
     }
 
