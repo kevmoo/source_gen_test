@@ -300,7 +300,7 @@ class AnnotatedTest<T> {
         '$ex\n\n'
         'To create or update all golden files, set the environment variable '
         '$_updateGoldensVariable=1\n\n'
-        'Make sure the directory exists and you can write the file in it.'
+        'Make sure the directory exists and you can write the file in it.',
       );
     } on TestFailure {
       printOnFailure("ACTUAL CONTENT:\nr'''\n$output'''");
