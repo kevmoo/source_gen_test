@@ -53,14 +53,14 @@ Future<String> generateForElement<T>(
         .map((ea) => ea.computeConstantValue()!)
         .where((obj) {
           if (obj.type is InterfaceType) {
-            final uri = (obj.type as InterfaceType).element2.source.uri;
+            final uri = (obj.type as InterfaceType).element.source.uri;
             return uri.isScheme('package') &&
                 uri.pathSegments.first == testPackageName;
           }
 
           return false;
         })
-        .where((obj) => obj.type!.element2!.name == T.toString())
+        .where((obj) => obj.type!.element!.name == T.toString())
         .toList();
 
     String msg;
@@ -71,7 +71,7 @@ Future<String> generateForElement<T>(
   NOTE: Could not find an annotation that matched
       ${generator.typeChecker}.
     Using a annotation with the same name from the synthetic library instead
-      ${(annotation.type as InterfaceType).element2.source.uri}#${annotation.type!.element2!.name}''';
+      ${(annotation.type as InterfaceType).element.source.uri}#${annotation.type!.element!.name}''';
     } else {
       msg = '''
   NOTE: Could not find an annotation that matched
