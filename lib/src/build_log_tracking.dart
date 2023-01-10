@@ -24,7 +24,7 @@ void initializeBuildLogTracking() {
     );
   }
   // ignore: cancel_subscriptions
-  StreamSubscription? logSubscription;
+  StreamSubscription<void>? logSubscription;
 
   setUp(() {
     assert(_buildLog!.isEmpty);

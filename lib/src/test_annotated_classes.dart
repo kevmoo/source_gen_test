@@ -44,7 +44,7 @@ void testAnnotatedElements<T>(
 /// An implementation member only exposed to make it easier to test
 /// [testAnnotatedElements] without registering any tests.
 @visibleForTesting
-List<AnnotatedTest> getAnnotatedClasses<T>(
+List<AnnotatedTest<T>> getAnnotatedClasses<T>(
   LibraryReader libraryReader,
   GeneratorForAnnotation<T> defaultGenerator, {
   Map<String, GeneratorForAnnotation<T>>? additionalGenerators,
