@@ -63,7 +63,7 @@ class ShouldThrow extends TestExpectation {
   const ShouldThrow(
     this.errorMessage, {
     this.todo,
-    element = true,
+    Object? element = true,
     Iterable<String>? configurations,
     List<String>? expectedLogItems,
   })  : element = element ?? true,
