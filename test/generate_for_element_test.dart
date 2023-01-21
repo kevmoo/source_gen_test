@@ -355,7 +355,7 @@ const TestClass2NameLowerCase = 'testclass2';
   });
 }
 
-Matcher _throwsArgumentError(matcher, [String? name]) => throwsA(
+Matcher _throwsArgumentError(Object? matcher, [String? name]) => throwsA(
       isArgumentError
           .having((e) => e.message, 'message', matcher)
           .having((ae) => ae.name, 'name', name),
