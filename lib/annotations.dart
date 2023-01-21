@@ -2,4 +2,4 @@
 library source_gen_test.annotations;
 
 export 'src/annotations.dart'
-    show ShouldGenerate, ShouldGenerateGolden, ShouldThrow;
+    show ShouldGenerate, ShouldGenerateFile, ShouldThrow;

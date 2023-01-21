@@ -63,13 +63,13 @@ class ShouldGenerate extends TestExpectation {
 /// To update a golden, the directory for its file must exist.
 ///
 /// Must be used with [testAnnotatedElements].
-class ShouldGenerateGolden extends TestExpectation {
+class ShouldGenerateFile extends TestExpectation {
   final String expectedOutputFileName;
   final bool contains;
   final String? partOf;
   final bool partOfCurrent;
 
-  const ShouldGenerateGolden(
+  const ShouldGenerateFile(
     this.expectedOutputFileName, {
     this.contains = false,
     this.partOf,
@@ -84,7 +84,7 @@ class ShouldGenerateGolden extends TestExpectation {
 
   @override
   TestExpectation replaceConfiguration(Iterable<String> newConfiguration) =>
-      ShouldGenerateGolden(
+      ShouldGenerateFile(
         expectedOutputFileName,
         contains: contains,
         partOf: partOf,

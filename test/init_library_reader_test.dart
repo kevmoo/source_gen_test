@@ -26,9 +26,9 @@ void main() {
           'badTestFunc',
           'TestClass1',
           'TestClass2',
-          'TestClassGoldenNoPart',
-          'TestClassGoldenPartOf',
-          'TestClassGoldenPartOfCurrent',
+          'TestClassFileNoPart',
+          'TestClassFilePartOf',
+          'TestClassFilePartOfCurrent',
           'TestClassWithBadMember',
         ]),
       );

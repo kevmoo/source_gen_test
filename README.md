@@ -23,12 +23,12 @@ const TestClass1NameLowerCase = 'testclass1';
 class TestClass1 {}
 ```
 
-Test against a golden output if you also want to write tests on the output itself.
+Test against a golden output file if you also want to write tests on the output itself.
 
 ```dart
 part 'goldens/testclass2.dart';
 
-@ShouldGenerateGolden(
+@ShouldGenerateFile(
   'goldens/testclass2.dart',
   partOfCurrent: true,
   configurations: ['default', 'no-prefix-required'],

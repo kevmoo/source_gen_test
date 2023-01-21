@@ -127,12 +127,12 @@ const TestClass2NameLowerCase = 'testclass2';
       'TestClass1',
       'TestClass2',
       'TestClass2',
-      'TestClassGoldenNoPart',
-      'TestClassGoldenNoPart',
-      'TestClassGoldenPartOf',
-      'TestClassGoldenPartOf',
-      'TestClassGoldenPartOfCurrent',
-      'TestClassGoldenPartOfCurrent',
+      'TestClassFileNoPart',
+      'TestClassFileNoPart',
+      'TestClassFilePartOf',
+      'TestClassFilePartOf',
+      'TestClassFilePartOfCurrent',
+      'TestClassFilePartOfCurrent',
       'TestClassWithBadMember',
       'badTestField',
       'badTestField',
@@ -311,9 +311,9 @@ const TestClass2NameLowerCase = 'testclass2';
             '`BadTestClass`: "no-prefix-required", "vague"; '
             '`TestClass1`: "no-prefix-required", "vague"; '
             '`TestClass2`: "vague"; '
-            '`TestClassGoldenNoPart`: "no-prefix-required", "vague"; '
-            '`TestClassGoldenPartOf`: "no-prefix-required", "vague"; '
-            '`TestClassGoldenPartOfCurrent`: "no-prefix-required", "vague"; '
+            '`TestClassFileNoPart`: "no-prefix-required", "vague"; '
+            '`TestClassFilePartOf`: "no-prefix-required", "vague"; '
+            '`TestClassFilePartOfCurrent`: "no-prefix-required", "vague"; '
             '`badTestField`: "vague"; '
             '`badTestFunc`: "vague"',
           ),

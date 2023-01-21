@@ -230,8 +230,8 @@ class AnnotatedTest<T> {
     if (expectation is ShouldGenerate) {
       test(_testName, _shouldGenerateTest);
       return;
-    } else if (expectation is ShouldGenerateGolden) {
-      test(_testName, _shouldGenerateGoldenTest);
+    } else if (expectation is ShouldGenerateFile) {
+      test(_testName, _shouldGenerateFileTest);
       return;
     } else if (expectation is ShouldThrow) {
       test(_testName, _shouldThrowTest);
@@ -267,9 +267,9 @@ class AnnotatedTest<T> {
     clearBuildLog();
   }
 
-  Future<void> _shouldGenerateGoldenTest() async {
+  Future<void> _shouldGenerateFileTest() async {
     final output = await _generate();
-    final exp = expectation as ShouldGenerateGolden;
+    final exp = expectation as ShouldGenerateFile;
 
     if (_libraryReader is! PathAwareLibraryReader) {
       throw TestFailure(
@@ -281,7 +281,7 @@ class AnnotatedTest<T> {
 
     final reader = _libraryReader as PathAwareLibraryReader;
     final path = p.join(reader.directory, exp.expectedOutputFileName);
-    final testOutput = _padOutputForGolden(output);
+    final testOutput = _padOutputForFile(output);
 
     try {
       if (Platform.environment[_updateGoldensVariable] == '1') {
@@ -319,8 +319,8 @@ class AnnotatedTest<T> {
     clearBuildLog();
   }
 
-  String _padOutputForGolden(String output) {
-    final exp = expectation as ShouldGenerateGolden;
+  String _padOutputForFile(String output) {
+    final exp = expectation as ShouldGenerateFile;
 
     if (exp.partOf != null) {
       return "part of '${exp.partOf}';\n\n$output";

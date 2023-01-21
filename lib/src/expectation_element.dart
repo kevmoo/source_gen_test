@@ -65,7 +65,7 @@ List<ExpectationElement> genAnnotatedElements(
 
 const _mappers = {
   TypeChecker.fromRuntime(ShouldGenerate): _shouldGenerate,
-  TypeChecker.fromRuntime(ShouldGenerateGolden): _shouldGenerateGolden,
+  TypeChecker.fromRuntime(ShouldGenerateFile): _shouldGenerateFile,
   TypeChecker.fromRuntime(ShouldThrow): _shouldThrow,
 };
 
@@ -95,11 +95,11 @@ ShouldGenerate _shouldGenerate(DartObject obj) {
   );
 }
 
-ShouldGenerateGolden _shouldGenerateGolden(DartObject obj) {
+ShouldGenerateFile _shouldGenerateFile(DartObject obj) {
   final reader = ConstantReader(obj);
   final partOf = reader.read('partOf');
   final partOfCurrent = reader.read('partOfCurrent');
-  return ShouldGenerateGolden(
+  return ShouldGenerateFile(
     reader.read('expectedOutputFileName').stringValue,
     contains: reader.read('contains').boolValue,
     partOf: partOf.isString ? partOf.stringValue : null,

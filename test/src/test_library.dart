@@ -3,7 +3,7 @@ import 'package:source_gen_test/annotations.dart';
 import 'test_annotation.dart';
 
 part 'test_part.dart';
-part 'goldens/test_library_golden_part_of_current.dart';
+part 'goldens/test_library_file_part_of_current.dart';
 
 @ShouldGenerate(
   r'''
@@ -21,8 +21,8 @@ const TestClass1NameLowerCase = 'testclass1';
 @TestAnnotation()
 class TestClass1 {}
 
-@ShouldGenerateGolden(
-  'goldens/test_library_golden_no_part.dart',
+@ShouldGenerateFile(
+  'goldens/test_library_file_no_part.dart',
   configurations: ['default', 'no-prefix-required'],
 )
 @ShouldThrow(
@@ -31,10 +31,10 @@ class TestClass1 {}
   element: false,
 )
 @TestAnnotation()
-class TestClassGoldenNoPart {}
+class TestClassFileNoPart {}
 
-@ShouldGenerateGolden(
-  'goldens/test_library_golden_part_of.dart',
+@ShouldGenerateFile(
+  'goldens/test_library_file_part_of.dart',
   partOf: 'test_part_owner.dart',
   configurations: ['default', 'no-prefix-required'],
 )
@@ -44,10 +44,10 @@ class TestClassGoldenNoPart {}
   element: false,
 )
 @TestAnnotation()
-class TestClassGoldenPartOf {}
+class TestClassFilePartOf {}
 
-@ShouldGenerateGolden(
-  'goldens/test_library_golden_part_of_current.dart',
+@ShouldGenerateFile(
+  'goldens/test_library_file_part_of_current.dart',
   partOfCurrent: true,
   configurations: ['default', 'no-prefix-required'],
 )
@@ -57,7 +57,7 @@ class TestClassGoldenPartOf {}
   element: false,
 )
 @TestAnnotation()
-class TestClassGoldenPartOfCurrent {}
+class TestClassFilePartOfCurrent {}
 
 @ShouldGenerate(
   r'''
