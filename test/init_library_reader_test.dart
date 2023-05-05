@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:source_gen_test/src/init_library_reader.dart';
 import 'package:test/test.dart';
@@ -15,16 +16,27 @@ void main() {
       );
 
       expect(
-        reader.allElements.map((e) => e.name),
+        reader.allElements.map((e) {
+          // https://github.com/dart-lang/sdk/issues/52280
+          if (e is LibraryElement) {
+            return 'Library: ${e.source.uri}';
+          }
+
+          return e.toString();
+        }),
         unorderedMatches([
-          '', // this is the library
-          'BadTestClass',
-          'badTestField',
-          'badTestField',
-          'badTestFunc',
-          'TestClass1',
-          'TestClass2',
-          'TestClassWithBadMember',
+          'Library: package:__test__/test_library.dart',
+          'int get badTestField',
+          'class TestClass1',
+          'class BadTestClass',
+          'class TestClassWithBadMember',
+          'int badTestFunc()',
+          'int badTestField',
+          'class TestClass2',
+          'import source /source_gen_test/lib/annotations.dart',
+          'import source /__test__/lib/test_annotation.dart',
+          'import source dart:core',
+          'part unit package:__test__/test_part.dart',
         ]),
       );
     });

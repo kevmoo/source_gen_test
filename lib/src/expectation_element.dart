@@ -9,7 +9,9 @@ List<ExpectationElement> genAnnotatedElements(
   LibraryReader libraryReader,
   Set<String> configDefaults,
 ) {
-  final allElements = libraryReader.allElements.toList(growable: false)
+  final allElements = libraryReader.allElements
+      .where((element) => element.name != null)
+      .toList(growable: false)
     ..sort((a, b) => a.name!.compareTo(b.name!));
 
   return allElements.expand((element) {
