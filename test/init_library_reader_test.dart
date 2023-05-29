@@ -32,6 +32,7 @@ void main() {
           'class TestClassWithBadMember',
           'int badTestFunc()',
           'int badTestField',
+          'class TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANop',
           'class TestClass2',
           'import source /source_gen_test/lib/annotations.dart',
           'import source /__test__/lib/test_annotation.dart',

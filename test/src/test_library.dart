@@ -78,3 +78,6 @@ int badTestFunc() => 42;
 )
 @TestAnnotation()
 const badTestField = 42;
+
+@TestAnnotation()
+class TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANop {}

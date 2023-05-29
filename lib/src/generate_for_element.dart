@@ -19,8 +19,11 @@ final _testAnnotationWarnings = <String>{};
 Future<String> generateForElement<T>(
   GeneratorForAnnotation<T> generator,
   LibraryReader libraryReader,
-  String name,
-) async {
+  String name, {
+  String Function(String code)? formatOutput,
+}) async {
+  formatOutput ??= _formatter.format;
+
   final elements =
       libraryReader.allElements.where((e) => e.name == name).toList();
 
@@ -94,7 +97,7 @@ Future<String> generateForElement<T>(
 
   final generated = await generatedStream.join('\n\n');
 
-  return _formatter.format(generated);
+  return formatOutput(generated);
 }
 
 // ignore: subtype_of_sealed_class
