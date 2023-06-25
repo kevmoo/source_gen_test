@@ -18,7 +18,7 @@ Future<void> main() async {
     reader,
     const ExampleGenerator(),
     additionalGenerators: const {
-      'no-prefix-required': ExampleGenerator(requireTestClassPrefix: false)
+      'no-prefix-required': ExampleGenerator(requireTestClassPrefix: false),
     },
   );
 }
