@@ -1,7 +1,8 @@
-## 1.0.5-dev
+## 1.0.5
 
 - Require `analyzer: ^5.2.0`
-- Require `sdk: '>=2.18.0 <3.0.0'`
+- Require `sdk: '>=2.19.0 <3.0.0'`
+- Fix for latest `pkg:source_gen`
 
 ## 1.0.4
 
