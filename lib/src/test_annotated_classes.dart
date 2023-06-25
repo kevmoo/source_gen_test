@@ -56,7 +56,7 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
   Iterable<String>? defaultConfiguration,
 }) {
   final generators = <String, GeneratorForAnnotation<T>>{
-    _defaultConfigurationName: defaultGenerator
+    _defaultConfigurationName: defaultGenerator,
   };
   if (additionalGenerators != null) {
     for (var invalidKey in const [_defaultConfigurationName, '']) {
