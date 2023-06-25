@@ -237,7 +237,7 @@ const TestClass2NameLowerCase = testclass2;
               'TestClass1',
               'TestClass2',
               'BadTestClass',
-              'extra'
+              'extra',
             ],
           ),
           _throwsArgumentError(
@@ -317,7 +317,7 @@ const TestClass2NameLowerCase = testclass2;
             reader,
             const TestGenerator(),
             additionalGenerators: const {
-              'default': TestGenerator(requireTestClassPrefix: false)
+              'default': TestGenerator(requireTestClassPrefix: false),
             },
           ),
           _throwsArgumentError(
@@ -333,7 +333,7 @@ const TestClass2NameLowerCase = testclass2;
             reader,
             const TestGenerator(),
             additionalGenerators: const {
-              '': TestGenerator(requireTestClassPrefix: false)
+              '': TestGenerator(requireTestClassPrefix: false),
             },
           ),
           _throwsArgumentError(
