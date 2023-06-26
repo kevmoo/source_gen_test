@@ -1,3 +1,7 @@
+## 1.0.6
+
+- Add `ShouldGenerateFile`.
+
 ## 1.0.5
 
 - Require `analyzer: ^5.2.0`
