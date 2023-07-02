@@ -26,6 +26,14 @@ const TestClass2NameUpperCase = 'TESTCLASS2';
 @ExampleAnnotation(includeUpperCase: true)
 class TestClass2 {}
 
+@ShouldGenerateFile(
+  'example_test_golden.dart',
+  partOfCurrent: true,
+  configurations: ['default', 'no-prefix-required'],
+)
+@ExampleAnnotation()
+class TestClassFilePartOfCurrent {}
+
 @ShouldGenerate(
   r'''
 const BadTestClassNameLength = 12;
