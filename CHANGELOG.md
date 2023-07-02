@@ -1,6 +1,11 @@
-## 1.0.6
+## 1.0.7
 
 - Add `ShouldGenerateFile`.
+
+## 1.0.6
+
+- Support the latest `package:analyzer`
+- Require `sdk: ^3.0.0`
 
 ## 1.0.5
 
