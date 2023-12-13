@@ -306,7 +306,7 @@ const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLo
               'TestClass1',
               'TestClass2',
               'BadTestClass',
-              'extra'
+              'extra',
             ],
           ),
           _throwsArgumentError(
@@ -386,7 +386,7 @@ const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLo
             reader,
             const TestGenerator(),
             additionalGenerators: const {
-              'default': TestGenerator(requireTestClassPrefix: false)
+              'default': TestGenerator(requireTestClassPrefix: false),
             },
           ),
           _throwsArgumentError(
@@ -402,7 +402,7 @@ const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLo
             reader,
             const TestGenerator(),
             additionalGenerators: const {
-              '': TestGenerator(requireTestClassPrefix: false)
+              '': TestGenerator(requireTestClassPrefix: false),
             },
           ),
           _throwsArgumentError(
