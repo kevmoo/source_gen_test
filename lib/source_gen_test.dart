@@ -1,4 +1,4 @@
-export 'annotations.dart' show ShouldGenerate, ShouldThrow;
+export 'annotations.dart' show ShouldGenerate, ShouldGenerateFile, ShouldThrow;
 export 'src/build_log_tracking.dart'
     show buildLogItems, clearBuildLog, initializeBuildLogTracking;
 export 'src/generate_for_element.dart' show generateForElement;

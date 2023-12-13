@@ -1,3 +1,7 @@
+## 1.1.0-wip
+
+- Add `ShouldGenerateFile`.
+
 ## 1.0.6
 
 - Support the latest `package:analyzer`

@@ -15,6 +15,8 @@ void main() {
         'test_library.dart',
       );
 
+      expect(reader.directory, 'test/src');
+      expect(reader.fileName, 'test_library.dart');
       expect(
         reader.allElements.map((e) {
           // https://github.com/dart-lang/sdk/issues/52280
@@ -29,6 +31,9 @@ void main() {
           'int get badTestField',
           'class TestClass1',
           'class BadTestClass',
+          'class TestClassFileNoPart',
+          'class TestClassFilePartOf',
+          'class TestClassFilePartOfCurrent',
           'class TestClassWithBadMember',
           'int badTestFunc()',
           'int badTestField',
@@ -37,6 +42,7 @@ void main() {
           'import source /__test__/lib/test_annotation.dart',
           'import source dart:core',
           'part unit package:__test__/test_part.dart',
+          'part source /__test__/lib/goldens/test_library_file_part_of_current.dart',
         ]),
       );
     });

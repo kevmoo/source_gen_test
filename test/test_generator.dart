@@ -56,7 +56,8 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
     }
 
     yield 'const ${element.name}NameLength = ${element.name.length};';
-    yield 'const ${element.name}NameLowerCase = ${element.name.toLowerCase()};';
+    yield 'const ${element.name}NameLowerCase = '
+        "'${element.name.toLowerCase()}';";
   }
 
   @override

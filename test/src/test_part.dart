@@ -4,7 +4,7 @@ part of 'test_library.dart';
   r'''
 const TestClass2NameLength = 10;
 
-const TestClass2NameLowerCase = testclass2;
+const TestClass2NameLowerCase = 'testclass2';
 ''',
 )
 @ShouldThrow(
