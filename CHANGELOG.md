@@ -1,3 +1,7 @@
+## 1.0.7-wip
+
+- Require `source_gen: ^1.5.0`.
+
 ## 1.0.6
 
 - Support the latest `package:analyzer`
