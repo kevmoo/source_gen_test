@@ -149,7 +149,6 @@ const TestClass2NameLowerCase = testclass2;
           const TestGenerator(),
           additionalGenerators: validAdditionalGenerators,
           expectedAnnotatedTests: validExpectedAnnotatedTests,
-          defaultConfiguration: null,
         );
 
         expect(list, hasLength(16));
