@@ -1,6 +1,7 @@
 ## 1.0.7-wip
 
 - Require `source_gen: ^1.5.0`.
+- Require `sdk: ^3.4.0`
 
 ## 1.0.6
 
