@@ -33,6 +33,7 @@ void initializeBuildLogTracking() {
   });
 
   tearDown(() async {
+    clearBuildLog();
     if (logSubscription != null) {
       await logSubscription!.cancel();
       logSubscription = null;
