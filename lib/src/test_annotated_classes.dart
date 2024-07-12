@@ -249,6 +249,7 @@ class AnnotatedTest<T> {
       );
     } on TestFailure {
       printOnFailure("ACTUAL CONTENT:\nr'''\n$output'''");
+      clearBuildLog();
       rethrow;
     }
 
