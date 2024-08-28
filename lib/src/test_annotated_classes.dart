@@ -279,7 +279,7 @@ class AnnotatedTest<T> {
       );
     }
 
-    final reader = _libraryReader as PathAwareLibraryReader;
+    final reader = _libraryReader;
     final path = p.join(reader.directory, exp.expectedOutputFileName);
     final testOutput = _padOutputForFile(output);
 
