@@ -6,7 +6,7 @@ import 'example_annotation.dart';
   r'''
 const TestClass1NameLength = 10;
 
-const TestClass1NameLowerCase = testclass1;
+const TestClass1NameLowerCase = 'testclass1';
 ''',
   configurations: ['default', 'no-prefix-required'],
 )
@@ -17,20 +17,28 @@ class TestClass1 {}
   r'''
 const TestClass2NameLength = 10;
 
-const TestClass2NameLowerCase = testclass2;
+const TestClass2NameLowerCase = 'testclass2';
 
-const TestClass2NameUpperCase = TESTCLASS2;
+const TestClass2NameUpperCase = 'TESTCLASS2';
 ''',
   configurations: ['default', 'no-prefix-required'],
 )
 @ExampleAnnotation(includeUpperCase: true)
 class TestClass2 {}
 
+@ShouldGenerateFile(
+  'example_test_golden.dart',
+  partOfCurrent: true,
+  configurations: ['default', 'no-prefix-required'],
+)
+@ExampleAnnotation()
+class TestClassFilePartOfCurrent {}
+
 @ShouldGenerate(
   r'''
 const BadTestClassNameLength = 12;
 
-const BadTestClassNameLowerCase = badtestclass;
+const BadTestClassNameLowerCase = 'badtestclass';
 ''',
   configurations: ['no-prefix-required'],
   expectedLogItems: ['This member might be not good.'],
