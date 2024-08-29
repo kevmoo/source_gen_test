@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:path/path.dart' as p;
@@ -10,7 +11,7 @@ const testPackageName = '__test__';
 
 /// Returns a [LibraryReader] for library specified by [targetLibraryFileName]
 /// using the files in [sourceDirectory].
-Future<LibraryReader> initializeLibraryReaderForDirectory(
+Future<PathAwareLibraryReader> initializeLibraryReaderForDirectory(
   String sourceDirectory,
   String targetLibraryFileName,
 ) async {
@@ -22,7 +23,13 @@ Future<LibraryReader> initializeLibraryReaderForDirectory(
   );
 
   try {
-    return await initializeLibraryReader(map, targetLibraryFileName);
+    final reader = await initializeLibraryReader(map, targetLibraryFileName);
+
+    return PathAwareLibraryReader(
+      directory: sourceDirectory,
+      fileName: targetLibraryFileName,
+      element: reader.element,
+    );
   } on ArgumentError catch (e) // ignore: avoid_catching_errors
   {
     if (e.message == 'Must exist as a key in `contentMap`.') {
@@ -70,4 +77,18 @@ Future<LibraryReader> initializeLibraryReader(
   );
 
   return LibraryReader(library);
+}
+
+/// A [LibraryReader] that also stores the [directory] and [fileName] it reads.
+class PathAwareLibraryReader extends LibraryReader {
+  final String directory;
+  final String fileName;
+
+  PathAwareLibraryReader({
+    required this.directory,
+    required this.fileName,
+    required LibraryElement element,
+  }) : super(element);
+
+  String get path => p.join(directory, fileName);
 }

@@ -80,7 +80,7 @@ class EmptyConfig{}
         r'''
 const TestClass1NameLength = 10;
 
-const TestClass1NameLowerCase = testclass1;
+const TestClass1NameLowerCase = 'testclass1';
 ''',
       );
     });
@@ -94,7 +94,7 @@ const TestClass1NameLowerCase = testclass1;
         r'''
 const TestClass2NameLength = 10;
 
-const TestClass2NameLowerCase = testclass2;
+const TestClass2NameLowerCase = 'testclass2';
 ''',
       );
     });
@@ -127,6 +127,12 @@ const TestClass2NameLowerCase = testclass2;
       'TestClass1',
       'TestClass2',
       'TestClass2',
+      'TestClassFileNoPart',
+      'TestClassFileNoPart',
+      'TestClassFilePartOf',
+      'TestClassFilePartOf',
+      'TestClassFilePartOfCurrent',
+      'TestClassFilePartOfCurrent',
       'TestClassWithBadMember',
       'badTestField',
       'badTestField',
@@ -151,7 +157,7 @@ const TestClass2NameLowerCase = testclass2;
           expectedAnnotatedTests: validExpectedAnnotatedTests,
         );
 
-        expect(list, hasLength(16));
+        expect(list, hasLength(25));
       });
 
       test('valid configuration', () {
@@ -163,7 +169,7 @@ const TestClass2NameLowerCase = testclass2;
           defaultConfiguration: ['default', 'no-prefix-required', 'vague'],
         );
 
-        expect(list, hasLength(16));
+        expect(list, hasLength(25));
       });
 
       test('different defaultConfiguration', () {
@@ -175,7 +181,7 @@ const TestClass2NameLowerCase = testclass2;
           defaultConfiguration: ['default'],
         );
 
-        expect(list, hasLength(13));
+        expect(list, hasLength(22));
       });
 
       test('different defaultConfiguration', () {
@@ -187,7 +193,7 @@ const TestClass2NameLowerCase = testclass2;
           defaultConfiguration: ['no-prefix-required'],
         );
 
-        expect(list, hasLength(13));
+        expect(list, hasLength(22));
       });
     });
     group('defaultConfiguration', () {
@@ -304,6 +310,9 @@ const TestClass2NameLowerCase = testclass2;
             '`BadTestClass`: "no-prefix-required", "vague"; '
             '`TestClass1`: "no-prefix-required", "vague"; '
             '`TestClass2`: "vague"; '
+            '`TestClassFileNoPart`: "no-prefix-required", "vague"; '
+            '`TestClassFilePartOf`: "no-prefix-required", "vague"; '
+            '`TestClassFilePartOfCurrent`: "no-prefix-required", "vague"; '
             '`badTestField`: "vague"; '
             '`badTestFunc`: "vague"',
           ),
