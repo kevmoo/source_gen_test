@@ -1,4 +1,4 @@
-## 1.1.0-wip
+## 1.1.0
 
 - Add `ShouldGenerateFile`.
 - Require `source_gen: ^1.5.0`.
