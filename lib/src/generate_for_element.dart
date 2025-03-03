@@ -12,8 +12,6 @@ import 'package:source_gen/src/output_helpers.dart'
 
 import 'init_library_reader.dart' show testPackageName;
 
-final _formatter = dart_style.DartFormatter();
-
 final _testAnnotationWarnings = <String>{};
 
 Future<String> generateForElement<T>(
@@ -94,7 +92,11 @@ Future<String> generateForElement<T>(
 
   final generated = await generatedStream.join('\n\n');
 
-  return _formatter.format(generated);
+  final formatter = dart_style.DartFormatter(
+    languageVersion: libraryReader.element.languageVersion.effective,
+  );
+
+  return formatter.format(generated);
 }
 
 // ignore: subtype_of_sealed_class

@@ -1,3 +1,13 @@
+## 1.1.1
+
+- Support the latest `package:analyzer` and `package:source_gen`.
+
+## 1.1.0
+
+- Add `ShouldGenerateFile`.
+- Require `source_gen: ^1.5.0`.
+- Require `sdk: ^3.4.0`
+
 ## 1.0.6
 
 - Support the latest `package:analyzer`
