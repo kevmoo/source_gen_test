@@ -80,7 +80,7 @@ class EmptyConfig{}
         r'''
 const TestClass1NameLength = 10;
 
-const TestClass1NameLowerCase = testclass1;
+const TestClass1NameLowerCase = 'testclass1';
 ''',
       );
     });
@@ -94,7 +94,7 @@ const TestClass1NameLowerCase = testclass1;
         r'''
 const TestClass2NameLength = 10;
 
-const TestClass2NameLowerCase = testclass2;
+const TestClass2NameLowerCase = 'testclass2';
 ''',
       );
     });
@@ -196,6 +196,12 @@ const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLo
       'TestClass1',
       'TestClass2',
       'TestClass2',
+      'TestClassFileNoPart',
+      'TestClassFileNoPart',
+      'TestClassFilePartOf',
+      'TestClassFilePartOf',
+      'TestClassFilePartOfCurrent',
+      'TestClassFilePartOfCurrent',
       'TestClassWithBadMember',
       'badTestField',
       'badTestField',
@@ -218,10 +224,9 @@ const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLo
           const TestGenerator(),
           additionalGenerators: validAdditionalGenerators,
           expectedAnnotatedTests: validExpectedAnnotatedTests,
-          defaultConfiguration: null,
         );
 
-        expect(list, hasLength(16));
+        expect(list, hasLength(25));
       });
 
       test('valid configuration', () {
@@ -233,7 +238,7 @@ const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLo
           defaultConfiguration: ['default', 'no-prefix-required', 'vague'],
         );
 
-        expect(list, hasLength(16));
+        expect(list, hasLength(25));
       });
 
       test('different defaultConfiguration', () {
@@ -245,7 +250,7 @@ const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLo
           defaultConfiguration: ['default'],
         );
 
-        expect(list, hasLength(13));
+        expect(list, hasLength(22));
       });
 
       test('different defaultConfiguration', () {
@@ -257,7 +262,7 @@ const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLo
           defaultConfiguration: ['no-prefix-required'],
         );
 
-        expect(list, hasLength(13));
+        expect(list, hasLength(22));
       });
     });
     group('defaultConfiguration', () {
@@ -374,6 +379,9 @@ const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLo
             '`BadTestClass`: "no-prefix-required", "vague"; '
             '`TestClass1`: "no-prefix-required", "vague"; '
             '`TestClass2`: "vague"; '
+            '`TestClassFileNoPart`: "no-prefix-required", "vague"; '
+            '`TestClassFilePartOf`: "no-prefix-required", "vague"; '
+            '`TestClassFilePartOfCurrent`: "no-prefix-required", "vague"; '
             '`badTestField`: "vague"; '
             '`badTestFunc`: "vague"',
           ),

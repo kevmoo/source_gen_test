@@ -40,11 +40,12 @@ class ExampleGenerator extends GeneratorForAnnotation<ExampleAnnotation> {
     }
 
     yield 'const ${element.name}NameLength = ${element.name.length};';
-    yield 'const ${element.name}NameLowerCase = ${element.name.toLowerCase()};';
+    yield 'const ${element.name}NameLowerCase = '
+        "'${element.name.toLowerCase()}';";
 
     if (annotation.read('includeUpperCase').literalValue as bool) {
       yield 'const ${element.name}NameUpperCase = '
-          '${element.name.toUpperCase()};';
+          "'${element.name.toUpperCase()}';";
     }
   }
 

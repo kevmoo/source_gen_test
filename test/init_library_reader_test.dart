@@ -1,6 +1,5 @@
 import 'dart:io';
 
-import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:source_gen_test/src/init_library_reader.dart';
 import 'package:test/test.dart';
@@ -15,19 +14,17 @@ void main() {
         'test_library.dart',
       );
 
+      expect(reader.directory, 'test/src');
+      expect(reader.fileName, 'test_library.dart');
       expect(
-        reader.allElements.map((e) {
-          // https://github.com/dart-lang/sdk/issues/52280
-          if (e is LibraryElement) {
-            return 'Library: ${e.source.uri}';
-          }
-
-          return e.toString();
-        }),
+        reader.allElements.map((e) => e.toString()),
         unorderedMatches([
-          'Library: package:__test__/test_library.dart',
+          'library package:__test__/test_library.dart',
           'int get badTestField',
           'class TestClass1',
+          'class TestClassFileNoPart',
+          'class TestClassFilePartOf',
+          'class TestClassFilePartOfCurrent',
           'class BadTestClass',
           'class TestClassWithBadMember',
           'int badTestFunc()',
@@ -38,6 +35,7 @@ void main() {
           'import source /__test__/lib/test_annotation.dart',
           'import source dart:core',
           'part unit package:__test__/test_part.dart',
+          'part source /__test__/lib/goldens/test_library_file_part_of_current.dart',
         ]),
       );
     });

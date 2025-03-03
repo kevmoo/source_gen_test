@@ -1,16 +1,16 @@
 import 'package:source_gen/source_gen.dart';
 import 'package:test/test.dart';
 
-/// Returns a [Matcher] that matches a thrown [InvalidGenerationSourceError]
-/// with [InvalidGenerationSourceError.message] that matches [messageMatcher],
-/// and [InvalidGenerationSourceError.todo] that matches [todoMatcher] and
-/// [InvalidGenerationSourceError.element] that [isNotNull].
+/// Returns a [Matcher] that matches a thrown [InvalidGenerationSource]
+/// with [InvalidGenerationSource.message] that matches [messageMatcher],
+/// and [InvalidGenerationSource.todo] that matches [todoMatcher] and
+/// [InvalidGenerationSource.element] that [isNotNull].
 Matcher throwsInvalidGenerationSourceError(
   Object messageMatcher, {
   Object? todoMatcher,
   Object? elementMatcher,
 }) {
-  var matcher = const TypeMatcher<InvalidGenerationSourceError>()
+  var matcher = const TypeMatcher<InvalidGenerationSource>()
       .having((e) => e.message, 'message', messageMatcher);
 
   if (elementMatcher != null) {

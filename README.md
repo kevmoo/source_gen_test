@@ -10,7 +10,7 @@ annotating test files.
   r'''
 const TestClass1NameLength = 10;
 
-const TestClass1NameLowerCase = testclass1;
+const TestClass1NameLowerCase = 'testclass1';
 ''',
   configurations: ['default', 'no-prefix-required'],
 )
@@ -21,6 +21,25 @@ const TestClass1NameLowerCase = testclass1;
 )
 @TestAnnotation()
 class TestClass1 {}
+```
+
+Test against a golden output file if you also want to write tests on the output itself.
+
+```dart
+part 'goldens/testclass2.dart';
+
+@ShouldGenerateFile(
+  'goldens/testclass2.dart',
+  partOfCurrent: true,
+  configurations: ['default', 'no-prefix-required'],
+)
+@ShouldThrow(
+  'Uh...',
+  configurations: ['vague'],
+  element: false,
+)
+@TestAnnotation()
+class TestClass2 {}
 ```
 
 Other helpers are also provided.
