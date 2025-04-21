@@ -16,6 +16,7 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
 
   @override
   Iterable<String> generateForAnnotatedElement(
+    // ignore: deprecated_member_use
     Element element,
     ConstantReader annotation,
     BuildStep buildStep,
@@ -28,6 +29,7 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
       log.info('This member might be not good.');
     }
 
+    // ignore: deprecated_member_use
     if (element is ClassElement) {
       final unsupportedFunc = element.methods
           .firstWhereOrNull((me) => me.name.contains('unsupported'));
