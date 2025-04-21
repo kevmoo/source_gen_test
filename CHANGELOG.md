@@ -1,3 +1,7 @@
+## 1.1.2-wip
+
+- Fixed some doc comment references.
+
 ## 1.1.1
 
 - Support the latest `package:analyzer` and `package:source_gen`.

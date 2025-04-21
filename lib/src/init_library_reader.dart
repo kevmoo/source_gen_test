@@ -87,6 +87,7 @@ class PathAwareLibraryReader extends LibraryReader {
   PathAwareLibraryReader({
     required this.directory,
     required this.fileName,
+    // ignore: deprecated_member_use
     required LibraryElement element,
   }) : super(element);
 

@@ -71,6 +71,7 @@ const _mappers = {
   TypeChecker.fromRuntime(ShouldThrow): _shouldThrow,
 };
 
+// ignore: deprecated_member_use
 Iterable<TestExpectation> _expectationElements(Element element) sync* {
   for (var entry in _mappers.entries) {
     for (var annotation in entry.key.annotationsOf(element)) {

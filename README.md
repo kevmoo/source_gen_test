@@ -1,5 +1,5 @@
 [![Pub package](https://img.shields.io/pub/v/source_gen_test.svg)](https://pub.dev/packages/source_gen_test)
-[![Build Status](https://github.com/kevmoo/source_gen_test/workflows/CI/badge.svg?branch=master)](https://github.com/kevmoo/source_gen_test/actions?query=workflow%3A%22CI%22+branch%3Amaster)
+[![CI](https://github.com/kevmoo/source_gen_test/actions/workflows/ci.yml/badge.svg)](https://github.com/kevmoo/source_gen_test/actions/workflows/ci.yml)
 [![package publisher](https://img.shields.io/pub/publisher/source_gen_test.svg)](https://pub.dev/packages/source_gen_test/publisher)
 
 Make it easy to test `Generators` derived from `package:source_gen` by

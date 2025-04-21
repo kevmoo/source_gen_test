@@ -23,7 +23,6 @@ void initializeBuildLogTracking() {
       '`initializeBuildLogTracking` should only be called once.',
     );
   }
-  // ignore: cancel_subscriptions
   StreamSubscription<void>? logSubscription;
 
   setUp(() {

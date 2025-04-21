@@ -13,6 +13,7 @@ class ExampleGenerator extends GeneratorForAnnotation<ExampleAnnotation> {
 
   @override
   Iterable<String> generateForAnnotatedElement(
+    // ignore: deprecated_member_use
     Element element,
     ConstantReader annotation,
     BuildStep buildStep,
@@ -23,6 +24,7 @@ class ExampleGenerator extends GeneratorForAnnotation<ExampleAnnotation> {
       log.info('This member might be not good.');
     }
 
+    // ignore: deprecated_member_use
     if (element is! ClassElement) {
       throw InvalidGenerationSourceError(
         'Only supports annotated classes.',

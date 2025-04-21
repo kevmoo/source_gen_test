@@ -354,6 +354,7 @@ class AnnotatedTest<T> {
         assert(exp.element is String);
         expectedElementName = exp.element as String;
       }
+      // ignore: deprecated_member_use
       elementMatcher = const TypeMatcher<Element>()
           .having((e) => e.name, 'name', expectedElementName);
     } else if (exp.element == true) {
