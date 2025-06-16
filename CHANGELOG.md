@@ -1,5 +1,7 @@
-## 1.1.2-wip
+## 1.1.2
 
+- Require `sdk: ^3.6.0` and update min requirements for a number of other
+  dependencies.
 - Fixed some doc comment references.
 
 ## 1.1.1
