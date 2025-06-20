@@ -17,8 +17,8 @@ Future<PathAwareLibraryReader> initializeLibraryReaderForDirectory(
 ) async {
   final map = Map.fromEntries(
     Directory(sourceDirectory).listSync().whereType<File>().map(
-      (f) => MapEntry(p.basename(f.path), f.readAsStringSync()),
-    ),
+          (f) => MapEntry(p.basename(f.path), f.readAsStringSync()),
+        ),
   );
 
   try {
