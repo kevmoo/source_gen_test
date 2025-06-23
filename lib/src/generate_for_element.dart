@@ -99,7 +99,6 @@ Future<String> generateForElement<T>(
   return formatter.format(generated);
 }
 
-// ignore: subtype_of_sealed_class
 class _MockBuildStep extends BuildStep {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
