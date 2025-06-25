@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_gen/source_gen.dart';
@@ -355,9 +355,8 @@ class AnnotatedTest<T> {
         assert(exp.element is String);
         expectedElementName = exp.element as String;
       }
-      // ignore: deprecated_member_use
-      elementMatcher = const TypeMatcher<Element>().having(
-        (e) => e.name,
+      elementMatcher = const TypeMatcher<Element2>().having(
+        (e) => e.name3,
         'name',
         expectedElementName,
       );
