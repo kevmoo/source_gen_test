@@ -74,6 +74,7 @@ Future<LibraryReader> initializeLibraryReader(
       return item.libraryFor(assetId);
     },
     resolverFor: targetLibraryAssetId,
+    readAllSourcesFromFilesystem: true,
   );
 
   return LibraryReader(library);
