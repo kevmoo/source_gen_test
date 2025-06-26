@@ -1,7 +1,9 @@
-## 1.1.2-wip
+## 1.2.0
 
-- Fixed some doc comment references.
+- Require `build: ^2.5.0`.
+- Require `build_test: ^3.2.0`.
 - Require `sdk: ^3.7.0`
+- Fixed some doc comment references.
 
 ## 1.1.1
 
