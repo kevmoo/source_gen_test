@@ -30,11 +30,6 @@ void main() {
           'int badTestFunc()',
           'int badTestField',
           'class TestClass2',
-          'import source /source_gen_test/lib/annotations.dart',
-          'import source /__test__/lib/test_annotation.dart',
-          'import source dart:core',
-          'part unit package:__test__/test_part.dart',
-          'part source /__test__/lib/goldens/test_library_file_part_of_current.dart',
         ]),
       );
     });

@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:path/path.dart' as p;
@@ -88,8 +88,7 @@ class PathAwareLibraryReader extends LibraryReader {
   PathAwareLibraryReader({
     required this.directory,
     required this.fileName,
-    // ignore: deprecated_member_use
-    required LibraryElement element,
+    required LibraryElement2 element,
   }) : super(element);
 
   String get path => p.join(directory, fileName);

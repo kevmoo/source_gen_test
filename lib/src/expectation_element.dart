@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -10,8 +10,8 @@ List<ExpectationElement> genAnnotatedElements(
   Set<String> configDefaults,
 ) {
   final allElements = libraryReader.allElements
-    .where((element) => element.name != null)
-    .toList(growable: false)..sort((a, b) => a.name!.compareTo(b.name!));
+    .where((element) => element.name3 != null)
+    .toList(growable: false)..sort((a, b) => a.name3!.compareTo(b.name3!));
 
   return allElements.expand((element) {
     final initialValues = _expectationElements(element).toList();
@@ -60,7 +60,7 @@ List<ExpectationElement> genAnnotatedElements(
       }
       assert(te.configurations!.isNotEmpty);
 
-      return ExpectationElement._(te, element.name!);
+      return ExpectationElement._(te, element.name3!);
     });
   }).toList();
 }
@@ -71,8 +71,7 @@ const _mappers = {
   TypeChecker.fromRuntime(ShouldThrow): _shouldThrow,
 };
 
-// ignore: deprecated_member_use
-Iterable<TestExpectation> _expectationElements(Element element) sync* {
+Iterable<TestExpectation> _expectationElements(Element2 element) sync* {
   for (var entry in _mappers.entries) {
     for (var annotation in entry.key.annotationsOf(element)) {
       yield entry.value(annotation);
