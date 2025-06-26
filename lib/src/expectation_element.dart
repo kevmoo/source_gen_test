@@ -10,9 +10,8 @@ List<ExpectationElement> genAnnotatedElements(
   Set<String> configDefaults,
 ) {
   final allElements = libraryReader.allElements
-      .where((element) => element.name != null)
-      .toList(growable: false)
-    ..sort((a, b) => a.name!.compareTo(b.name!));
+    .where((element) => element.name != null)
+    .toList(growable: false)..sort((a, b) => a.name!.compareTo(b.name!));
 
   return allElements.expand((element) {
     final initialValues = _expectationElements(element).toList();
@@ -21,9 +20,10 @@ List<ExpectationElement> genAnnotatedElements(
 
     final duplicateConfigs = <String>{};
 
-    for (var configs in initialValues
-        .map((e) => e.configurations)
-        .whereType<Iterable<String>>()) {
+    for (var configs
+        in initialValues
+            .map((e) => e.configurations)
+            .whereType<Iterable<String>>()) {
       if (configs.isEmpty) {
         throw InvalidGenerationSourceError(
           '`configuration` cannot be empty.',
@@ -123,11 +123,12 @@ ShouldThrow _shouldThrow(DartObject obj) {
   );
 }
 
-List<String> _expectedLogItems(ConstantReader reader) => reader
-    .read('expectedLogItems')
-    .listValue
-    .map((obj) => obj.toStringValue()!)
-    .toList();
+List<String> _expectedLogItems(ConstantReader reader) =>
+    reader
+        .read('expectedLogItems')
+        .listValue
+        .map((obj) => obj.toStringValue()!)
+        .toList();
 
 Set<String>? _configurations(ConstantReader reader) {
   final field = reader.read('configurations');
