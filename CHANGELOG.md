@@ -1,6 +1,7 @@
 ## 1.1.2-wip
 
 - Fixed some doc comment references.
+- Require `sdk: ^3.7.0`
 
 ## 1.1.1
 

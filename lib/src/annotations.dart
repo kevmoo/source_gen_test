@@ -9,7 +9,7 @@ abstract class TestExpectation {
   final List<String> expectedLogItems;
 
   const TestExpectation._(this.configurations, List<String>? expectedLogItems)
-      : expectedLogItems = expectedLogItems ?? const [];
+    : expectedLogItems = expectedLogItems ?? const [];
 
   TestExpectation replaceConfiguration(Iterable<String> newConfiguration);
 }
@@ -74,11 +74,11 @@ class ShouldGenerateFile extends TestExpectation {
     this.partOfCurrent = false,
     Iterable<String>? configurations,
     List<String>? expectedLogItems,
-  })  : assert(
-          partOf == null || !partOfCurrent,
-          'Cannot have both partOf and partOfCurrent',
-        ),
-        super._(configurations, expectedLogItems);
+  }) : assert(
+         partOf == null || !partOfCurrent,
+         'Cannot have both partOf and partOfCurrent',
+       ),
+       super._(configurations, expectedLogItems);
 
   @override
   TestExpectation replaceConfiguration(Iterable<String> newConfiguration) =>
@@ -118,8 +118,8 @@ class ShouldThrow extends TestExpectation {
     Object? element = true,
     Iterable<String>? configurations,
     List<String>? expectedLogItems,
-  })  : element = element ?? true,
-        super._(configurations, expectedLogItems);
+  }) : element = element ?? true,
+       super._(configurations, expectedLogItems);
 
   @override
   TestExpectation replaceConfiguration(Iterable<String> newConfiguration) =>

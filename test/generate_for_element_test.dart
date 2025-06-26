@@ -15,9 +15,8 @@ class TestAnnotation {
 Future<void> main() async {
   group('Bad annotations', () {
     test('duplicate configurations for the same member', () async {
-      final badReader = await initializeLibraryReader(
-        {
-          'bad_lib.dart': r"""
+      final badReader = await initializeLibraryReader({
+        'bad_lib.dart': r"""
 import 'package:source_gen_test/annotations.dart';
 import 'annotations.dart';
 @ShouldGenerate('', configurations: ['c'])
@@ -25,10 +24,8 @@ import 'annotations.dart';
 @TestAnnotation()
 class TestClass{}
 """,
-          'annotations.dart': _testAnnotationContent,
-        },
-        'bad_lib.dart',
-      );
+        'annotations.dart': _testAnnotationContent,
+      }, 'bad_lib.dart');
 
       expect(
         () => testAnnotatedElements(badReader, const TestGenerator()),
@@ -41,19 +38,16 @@ class TestClass{}
     });
 
     test('annotation with no configuration', () async {
-      final badReader = await initializeLibraryReader(
-        {
-          'bad_lib.dart': r"""
+      final badReader = await initializeLibraryReader({
+        'bad_lib.dart': r"""
 import 'package:source_gen_test/annotations.dart';
 import 'annotations.dart';
 @ShouldGenerate('', configurations: [])
 @TestAnnotation()
 class EmptyConfig{}
 """,
-          'annotations.dart': _testAnnotationContent,
-        },
-        'bad_lib.dart',
-      );
+        'annotations.dart': _testAnnotationContent,
+      }, 'bad_lib.dart');
 
       expect(
         () => testAnnotatedElements(badReader, const TestGenerator()),
@@ -72,31 +66,31 @@ class EmptyConfig{}
 
   group('generateForElement', () {
     test('TestClass1', () async {
-      final output =
-          await generateForElement(const TestGenerator(), reader, 'TestClass1');
+      final output = await generateForElement(
+        const TestGenerator(),
+        reader,
+        'TestClass1',
+      );
       printOnFailure(output);
-      expect(
-        output,
-        r'''
+      expect(output, r'''
 const TestClass1NameLength = 10;
 
 const TestClass1NameLowerCase = 'testclass1';
-''',
-      );
+''');
     });
 
     test('TestClass2', () async {
-      final output =
-          await generateForElement(const TestGenerator(), reader, 'TestClass2');
+      final output = await generateForElement(
+        const TestGenerator(),
+        reader,
+        'TestClass2',
+      );
       printOnFailure(output);
-      expect(
-        output,
-        r'''
+      expect(output, r'''
 const TestClass2NameLength = 10;
 
 const TestClass2NameLowerCase = 'testclass2';
-''',
-      );
+''');
     });
   });
 
@@ -205,10 +199,7 @@ const TestClass2NameLowerCase = 'testclass2';
             additionalGenerators: validAdditionalGenerators,
             defaultConfiguration: [],
           ),
-          _throwsArgumentError(
-            'Cannot be empty.',
-            'defaultConfiguration',
-          ),
+          _throwsArgumentError('Cannot be empty.', 'defaultConfiguration'),
         );
       });
 
@@ -218,8 +209,9 @@ const TestClass2NameLowerCase = 'testclass2';
             reader,
             const TestGenerator(),
             additionalGenerators: const {
-              'no-prefix-required':
-                  TestGenerator(requireTestClassPrefix: false),
+              'no-prefix-required': TestGenerator(
+                requireTestClassPrefix: false,
+              ),
             },
             defaultConfiguration: ['unknown'],
           ),
@@ -257,10 +249,7 @@ const TestClass2NameLowerCase = 'testclass2';
           () => testAnnotatedElements(
             reader,
             const TestGenerator(),
-            expectedAnnotatedTests: [
-              'TestClass1',
-              'TestClass2',
-            ],
+            expectedAnnotatedTests: ['TestClass1', 'TestClass2'],
           ),
           _throwsArgumentError(
             'There are items missing',
@@ -300,10 +289,7 @@ const TestClass2NameLowerCase = 'testclass2';
 
       test('missing a specified generator fails', () {
         expect(
-          () => testAnnotatedElements(
-            reader,
-            const TestGenerator(),
-          ),
+          () => testAnnotatedElements(reader, const TestGenerator()),
           _throwsArgumentError(
             'There are elements defined with configurations with no '
             'associated generator provided.\n'
@@ -355,7 +341,7 @@ const TestClass2NameLowerCase = 'testclass2';
 }
 
 Matcher _throwsArgumentError(Object? matcher, [String? name]) => throwsA(
-      isArgumentError
-          .having((e) => e.message, 'message', matcher)
-          .having((ae) => ae.name, 'name', name),
-    );
+  isArgumentError
+      .having((e) => e.message, 'message', matcher)
+      .having((ae) => ae.name, 'name', name),
+);

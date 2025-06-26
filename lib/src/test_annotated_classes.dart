@@ -104,13 +104,16 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
     defaultConfigSet = generators.keys.toSet();
   }
 
-  final annotatedElements =
-      genAnnotatedElements(libraryReader, defaultConfigSet);
+  final annotatedElements = genAnnotatedElements(
+    libraryReader,
+    defaultConfigSet,
+  );
 
   final unusedConfigurations = generators.keys.toSet();
   for (var annotatedElement in annotatedElements) {
-    unusedConfigurations
-        .removeAll(annotatedElement.expectation.configurations!);
+    unusedConfigurations.removeAll(
+      annotatedElement.expectation.configurations!,
+    );
   }
   if (unusedConfigurations.isNotEmpty) {
     if (unusedConfigurations.contains(_defaultConfigurationName)) {
@@ -184,14 +187,18 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
   }
 
   if (mapMissingConfigs.isNotEmpty) {
-    final elements = mapMissingConfigs.entries.toList()
-      ..sort((a, b) => a.key.compareTo(b.key));
+    final elements =
+        mapMissingConfigs.entries.toList()
+          ..sort((a, b) => a.key.compareTo(b.key));
 
-    final message = elements.map((e) {
-      final sortedConfigs =
-          (e.value.toList()..sort()).map((v) => '"$v"').join(', ');
-      return '`${e.key}`: $sortedConfigs';
-    }).join('; ');
+    final message = elements
+        .map((e) {
+          final sortedConfigs = (e.value.toList()..sort())
+              .map((v) => '"$v"')
+              .join(', ');
+          return '`${e.key}`: $sortedConfigs';
+        })
+        .join('; ');
 
     throw ArgumentError(
       'There are elements defined with configurations with no associated '
@@ -288,10 +295,7 @@ class AnnotatedTest<T> {
         File(path).writeAsStringSync(testOutput);
       } else {
         final content = File(path).readAsStringSync();
-        expect(
-          testOutput,
-          exp.contains ? contains(content) : equals(content),
-        );
+        expect(testOutput, exp.contains ? contains(content) : equals(content));
       }
     } on FileSystemException catch (ex) {
       throw TestFailure(
@@ -331,10 +335,7 @@ class AnnotatedTest<T> {
       final outputDirectory =
           File(p.join(reader.directory, exp.expectedOutputFileName)).parent;
 
-      final path = p.relative(
-        reader.path,
-        from: outputDirectory.path,
-      );
+      final path = p.relative(reader.path, from: outputDirectory.path);
       return "part of '$path';\n\n$output";
     }
 
@@ -355,8 +356,11 @@ class AnnotatedTest<T> {
         expectedElementName = exp.element as String;
       }
       // ignore: deprecated_member_use
-      elementMatcher = const TypeMatcher<Element>()
-          .having((e) => e.name, 'name', expectedElementName);
+      elementMatcher = const TypeMatcher<Element>().having(
+        (e) => e.name,
+        'name',
+        expectedElementName,
+      );
     } else if (exp.element == true) {
       elementMatcher = isNotNull;
     } else {

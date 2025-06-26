@@ -16,10 +16,9 @@ Future<PathAwareLibraryReader> initializeLibraryReaderForDirectory(
   String targetLibraryFileName,
 ) async {
   final map = Map.fromEntries(
-    Directory(sourceDirectory)
-        .listSync()
-        .whereType<File>()
-        .map((f) => MapEntry(p.basename(f.path), f.readAsStringSync())),
+    Directory(sourceDirectory).listSync().whereType<File>().map(
+      (f) => MapEntry(p.basename(f.path), f.readAsStringSync()),
+    ),
   );
 
   try {
@@ -64,8 +63,9 @@ Future<LibraryReader> initializeLibraryReader(
 
   final targetLibraryAssetId = assetIdForFile(targetLibraryFileName);
 
-  final assetMap = contentMap
-      .map((file, content) => MapEntry(assetIdForFile(file), content));
+  final assetMap = contentMap.map(
+    (file, content) => MapEntry(assetIdForFile(file), content),
+  );
 
   final library = await resolveSources(
     assetMap,

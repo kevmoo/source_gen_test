@@ -31,8 +31,9 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
 
     // ignore: deprecated_member_use
     if (element is ClassElement) {
-      final unsupportedFunc = element.methods
-          .firstWhereOrNull((me) => me.name.contains('unsupported'));
+      final unsupportedFunc = element.methods.firstWhereOrNull(
+        (me) => me.name.contains('unsupported'),
+      );
 
       if (unsupportedFunc != null) {
         throw InvalidGenerationSourceError(

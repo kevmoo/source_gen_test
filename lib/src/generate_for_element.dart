@@ -47,19 +47,20 @@ Future<String> generateForElement<T>(
   var annotation = generator.typeChecker.firstAnnotationOf(element);
 
   if (annotation == null) {
-    final annotationFromTestLib = element.metadata
-        .map((ea) => ea.computeConstantValue()!)
-        .where((obj) {
-          if (obj.type is InterfaceType) {
-            final uri = (obj.type as InterfaceType).element.source.uri;
-            return uri.isScheme('package') &&
-                uri.pathSegments.first == testPackageName;
-          }
+    final annotationFromTestLib =
+        element.metadata
+            .map((ea) => ea.computeConstantValue()!)
+            .where((obj) {
+              if (obj.type is InterfaceType) {
+                final uri = (obj.type as InterfaceType).element.source.uri;
+                return uri.isScheme('package') &&
+                    uri.pathSegments.first == testPackageName;
+              }
 
-          return false;
-        })
-        .where((obj) => obj.type!.element!.name == T.toString())
-        .toList();
+              return false;
+            })
+            .where((obj) => obj.type!.element!.name == T.toString())
+            .toList();
 
     String msg;
     if (annotationFromTestLib.length == 1) {

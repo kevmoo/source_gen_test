@@ -7,9 +7,7 @@ import 'src/example_annotation.dart';
 class ExampleGenerator extends GeneratorForAnnotation<ExampleAnnotation> {
   final bool requireTestClassPrefix;
 
-  const ExampleGenerator({
-    this.requireTestClassPrefix = true,
-  });
+  const ExampleGenerator({this.requireTestClassPrefix = true});
 
   @override
   Iterable<String> generateForAnnotatedElement(
