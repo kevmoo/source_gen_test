@@ -15,16 +15,9 @@ dependencies:
   dart_style: '>=2.3.7 <4.0.0'
   meta: ^1.15.0
   path: ^1.9.0
-  source_gen: '>=1.5.0 <3.0.0'
+  source_gen: ^3.0.0-dev
   test: ^1.24.4
 
 dev_dependencies:
   collection: ^1.19.0
   dart_flutter_team_lints: ^3.0.0
-
-dependency_overrides:
-  source_gen:
-    git:
-      url: https://github.com/dart-lang/source_gen
-      path: source_gen
-      ref: 6c9702e7152e61b16c8adec3f3011bda738b0e29
