@@ -17,8 +17,9 @@ final _testAnnotationWarnings = <String>{};
 Future<String> generateForElement<T>(
   GeneratorForAnnotation<T> generator,
   LibraryReader libraryReader,
-  String name,
-) async {
+  String name, {
+  String Function(String code)? formatOutput,
+}) async {
   final elements =
       libraryReader.allElements.where((e) => e.name3 == name).toList();
 
@@ -93,11 +94,11 @@ Future<String> generateForElement<T>(
 
   final generated = await generatedStream.join('\n\n');
 
-  final formatter = dart_style.DartFormatter(
+  formatOutput ??= dart_style.DartFormatter(
     languageVersion: libraryReader.element.languageVersion.effective,
-  );
+  ).format;
 
-  return formatter.format(generated);
+  return formatOutput(generated);
 }
 
 class _MockBuildStep extends BuildStep {
