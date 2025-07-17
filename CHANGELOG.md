@@ -1,3 +1,7 @@
+## 1.3.0
+
+- Switch to analyzer element2 model and `build: ^3.0.0`.
+
 ## 1.3.0-dev
 
 - Switch to analyzer element2 model and `build: ^3.0.0-dev`.
