@@ -1,3 +1,11 @@
+## 1.3.1
+
+- Update dependencies
+  - `analyzer: '>=7.4.0 <9.0.0'`
+  - `build_test: ^3.3.0`
+  - `dart_style: ^3.0.0`
+  - `test: ^1.25.9`
+
 ## 1.3.0
 
 - Switch to analyzer element2 model and `build: ^3.0.0`.
