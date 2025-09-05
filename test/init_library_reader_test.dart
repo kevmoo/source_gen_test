@@ -29,6 +29,7 @@ void main() {
           'class TestClassWithBadMember',
           'int badTestFunc()',
           'int badTestField',
+          'class TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANop',
           'class TestClass2',
         ]),
       );
