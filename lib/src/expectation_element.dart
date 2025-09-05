@@ -66,9 +66,12 @@ List<ExpectationElement> genAnnotatedElements(
 }
 
 const _mappers = {
-  TypeChecker.fromRuntime(ShouldGenerate): _shouldGenerate,
-  TypeChecker.fromRuntime(ShouldGenerateFile): _shouldGenerateFile,
-  TypeChecker.fromRuntime(ShouldThrow): _shouldThrow,
+  TypeChecker.typeNamed(ShouldGenerate, inPackage: 'source_gen_test'):
+      _shouldGenerate,
+  TypeChecker.typeNamed(ShouldGenerateFile, inPackage: 'source_gen_test'):
+      _shouldGenerateFile,
+  TypeChecker.typeNamed(ShouldThrow, inPackage: 'source_gen_test'):
+      _shouldThrow,
 };
 
 Iterable<TestExpectation> _expectationElements(Element2 element) sync* {
