@@ -1,3 +1,8 @@
+## 1.3.2
+
+- Allow `build: '>=3.0.0 <5.0.0'`.
+- Allow `source_gen: '>=3.0.0 <5.0.0'`.
+
 ## 1.3.1
 
 - Update dependencies
