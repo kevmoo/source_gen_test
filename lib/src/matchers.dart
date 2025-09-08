@@ -10,8 +10,11 @@ Matcher throwsInvalidGenerationSourceError(
   Object? todoMatcher,
   Object? elementMatcher,
 }) {
-  var matcher = const TypeMatcher<InvalidGenerationSource>()
-      .having((e) => e.message, 'message', messageMatcher);
+  var matcher = const TypeMatcher<InvalidGenerationSource>().having(
+    (e) => e.message,
+    'message',
+    messageMatcher,
+  );
 
   if (elementMatcher != null) {
     matcher = matcher.having((e) => e.element, 'element', elementMatcher);

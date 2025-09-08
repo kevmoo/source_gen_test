@@ -13,11 +13,7 @@ const TestClass1NameLowerCase = 'testclass1';
 ''',
   configurations: ['default', 'no-prefix-required'],
 )
-@ShouldThrow(
-  'Uh...',
-  configurations: ['vague'],
-  element: false,
-)
+@ShouldThrow('Uh...', configurations: ['vague'], element: false)
 @TestAnnotation()
 class TestClass1 {}
 
@@ -25,11 +21,7 @@ class TestClass1 {}
   'goldens/test_library_file_no_part.dart',
   configurations: ['default', 'no-prefix-required'],
 )
-@ShouldThrow(
-  'Uh...',
-  configurations: ['vague'],
-  element: false,
-)
+@ShouldThrow('Uh...', configurations: ['vague'], element: false)
 @TestAnnotation()
 class TestClassFileNoPart {}
 
@@ -38,11 +30,7 @@ class TestClassFileNoPart {}
   partOf: 'test_part_owner.dart',
   configurations: ['default', 'no-prefix-required'],
 )
-@ShouldThrow(
-  'Uh...',
-  configurations: ['vague'],
-  element: false,
-)
+@ShouldThrow('Uh...', configurations: ['vague'], element: false)
 @TestAnnotation()
 class TestClassFilePartOf {}
 
@@ -51,11 +39,7 @@ class TestClassFilePartOf {}
   partOfCurrent: true,
   configurations: ['default', 'no-prefix-required'],
 )
-@ShouldThrow(
-  'Uh...',
-  configurations: ['vague'],
-  element: false,
-)
+@ShouldThrow('Uh...', configurations: ['vague'], element: false)
 @TestAnnotation()
 class TestClassFilePartOfCurrent {}
 
@@ -74,11 +58,7 @@ const BadTestClassNameLowerCase = 'badtestclass';
   configurations: ['default'],
   expectedLogItems: ['This member might be not good.'],
 )
-@ShouldThrow(
-  'Uh...',
-  configurations: ['vague'],
-  element: false,
-)
+@ShouldThrow('Uh...', configurations: ['vague'], element: false)
 @TestAnnotation()
 class BadTestClass {}
 
@@ -98,11 +78,7 @@ class TestClassWithBadMember {
   'Only supports annotated classes.',
   todo: 'Remove `TestAnnotation` from the associated element.',
 )
-@ShouldThrow(
-  'Uh...',
-  configurations: ['vague'],
-  element: false,
-)
+@ShouldThrow('Uh...', configurations: ['vague'], element: false)
 @TestAnnotation()
 int badTestFunc() => 42;
 
@@ -110,11 +86,7 @@ int badTestFunc() => 42;
   'Only supports annotated classes.',
   todo: 'Remove `TestAnnotation` from the associated element.',
 )
-@ShouldThrow(
-  'Uh...',
-  configurations: ['vague'],
-  element: false,
-)
+@ShouldThrow('Uh...', configurations: ['vague'], element: false)
 @TestAnnotation()
 const badTestField = 42;
 

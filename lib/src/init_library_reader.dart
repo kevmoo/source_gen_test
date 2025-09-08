@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:build/build.dart';
 import 'package:build_test/build_test.dart';
 import 'package:path/path.dart' as p;
@@ -16,10 +16,9 @@ Future<PathAwareLibraryReader> initializeLibraryReaderForDirectory(
   String targetLibraryFileName,
 ) async {
   final map = Map.fromEntries(
-    Directory(sourceDirectory)
-        .listSync()
-        .whereType<File>()
-        .map((f) => MapEntry(p.basename(f.path), f.readAsStringSync())),
+    Directory(sourceDirectory).listSync().whereType<File>().map(
+      (f) => MapEntry(p.basename(f.path), f.readAsStringSync()),
+    ),
   );
 
   try {
@@ -64,8 +63,9 @@ Future<LibraryReader> initializeLibraryReader(
 
   final targetLibraryAssetId = assetIdForFile(targetLibraryFileName);
 
-  final assetMap = contentMap
-      .map((file, content) => MapEntry(assetIdForFile(file), content));
+  final assetMap = contentMap.map(
+    (file, content) => MapEntry(assetIdForFile(file), content),
+  );
 
   final library = await resolveSources(
     assetMap,
@@ -74,6 +74,7 @@ Future<LibraryReader> initializeLibraryReader(
       return item.libraryFor(assetId);
     },
     resolverFor: targetLibraryAssetId,
+    readAllSourcesFromFilesystem: true,
   );
 
   return LibraryReader(library);
@@ -87,7 +88,7 @@ class PathAwareLibraryReader extends LibraryReader {
   PathAwareLibraryReader({
     required this.directory,
     required this.fileName,
-    required LibraryElement element,
+    required LibraryElement2 element,
   }) : super(element);
 
   String get path => p.join(directory, fileName);

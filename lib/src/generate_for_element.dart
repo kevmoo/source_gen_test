@@ -2,7 +2,7 @@
 
 import 'dart:async';
 
-import 'package:analyzer/dart/element/element.dart';
+import 'package:analyzer/dart/element/element2.dart';
 import 'package:analyzer/dart/element/type.dart';
 import 'package:build/build.dart';
 import 'package:dart_style/dart_style.dart' as dart_style;
@@ -21,7 +21,7 @@ Future<String> generateForElement<T>(
   String Function(String code)? formatOutput,
 }) async {
   final elements =
-      libraryReader.allElements.where((e) => e.name == name).toList();
+      libraryReader.allElements.where((e) => e.name3 == name).toList();
 
   if (elements.isEmpty) {
     throw ArgumentError.value(
@@ -31,13 +31,13 @@ Future<String> generateForElement<T>(
     );
   }
 
-  Element element;
+  Element2 element;
 
   if (elements.length == 1) {
     element = elements[0];
   } else {
     final rootProperties =
-        elements.whereType<PropertyInducingElement>().toList();
+        elements.whereType<PropertyInducingElement2>().toList();
     if (rootProperties.length == 1) {
       element = rootProperties[0];
     } else {
@@ -48,19 +48,20 @@ Future<String> generateForElement<T>(
   var annotation = generator.typeChecker.firstAnnotationOf(element);
 
   if (annotation == null) {
-    final annotationFromTestLib = element.metadata
-        .map((ea) => ea.computeConstantValue()!)
-        .where((obj) {
-          if (obj.type is InterfaceType) {
-            final uri = (obj.type as InterfaceType).element.source.uri;
-            return uri.isScheme('package') &&
-                uri.pathSegments.first == testPackageName;
-          }
+    final annotationFromTestLib =
+        (element as Annotatable).metadata2.annotations
+            .map((ea) => ea.computeConstantValue()!)
+            .where((obj) {
+              if (obj.type is InterfaceType) {
+                final uri = (obj.type as InterfaceType).element3.library2.uri;
+                return uri.isScheme('package') &&
+                    uri.pathSegments.first == testPackageName;
+              }
 
-          return false;
-        })
-        .where((obj) => obj.type!.element!.name == T.toString())
-        .toList();
+              return false;
+            })
+            .where((obj) => obj.type!.element3!.name3 == T.toString())
+            .toList();
 
     String msg;
     if (annotationFromTestLib.length == 1) {
@@ -70,7 +71,7 @@ Future<String> generateForElement<T>(
   NOTE: Could not find an annotation that matched
       ${generator.typeChecker}.
     Using a annotation with the same name from the synthetic library instead
-      ${(annotation.type as InterfaceType).element.source.uri}#${annotation.type!.element!.name}''';
+      ${(annotation.type as InterfaceType).element3.library2.firstFragment.source.uri}#${annotation.type!.element3!.name3}''';
     } else {
       msg = '''
   NOTE: Could not find an annotation that matched
@@ -100,7 +101,6 @@ Future<String> generateForElement<T>(
   return formatOutput(generated);
 }
 
-// ignore: subtype_of_sealed_class
 class _MockBuildStep extends BuildStep {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);

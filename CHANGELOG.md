@@ -1,3 +1,27 @@
+## 1.3.2
+
+- Allow `build: '>=3.0.0 <5.0.0'`.
+- Allow `source_gen: '>=3.0.0 <5.0.0'`.
+
+## 1.3.1
+
+- Update dependencies
+  - `analyzer: '>=7.4.0 <9.0.0'`
+  - `build_test: ^3.3.0`
+  - `dart_style: ^3.0.0`
+  - `test: ^1.25.9`
+
+## 1.3.0
+
+- Switch to analyzer element2 model and `build: ^3.0.0`.
+
+## 1.2.0
+
+- Require `build: ^2.5.0`.
+- Require `build_test: ^3.2.0`.
+- Require `sdk: ^3.7.0`
+- Fixed some doc comment references.
+
 ## 1.1.1
 
 - Support the latest `package:analyzer` and `package:source_gen`.
