@@ -1,8 +1,6 @@
-// ignore_for_file: comment_references
-// Note: Should be importing the below libs instead, but we are avoiding imports
-// in this file to speed up analyzer parsing!
-// import 'package:source_gen/source_gen.dart';
-// import 'test_annotated_classes.dart';
+/// @docImport 'package:source_gen/source_gen.dart';
+/// @docImport 'test_annotated_classes.dart';
+library;
 
 /// Non-public, implementation base class of  [ShouldGenerate] and
 /// [ShouldThrow].
@@ -11,7 +9,7 @@ abstract class TestExpectation {
   final List<String> expectedLogItems;
 
   const TestExpectation._(this.configurations, List<String>? expectedLogItems)
-      : expectedLogItems = expectedLogItems ?? const [];
+    : expectedLogItems = expectedLogItems ?? const [];
 
   TestExpectation replaceConfiguration(Iterable<String> newConfiguration);
 }
@@ -76,11 +74,11 @@ class ShouldGenerateFile extends TestExpectation {
     this.partOfCurrent = false,
     Iterable<String>? configurations,
     List<String>? expectedLogItems,
-  })  : assert(
-          partOf == null || !partOfCurrent,
-          'Cannot have both partOf and partOfCurrent',
-        ),
-        super._(configurations, expectedLogItems);
+  }) : assert(
+         partOf == null || !partOfCurrent,
+         'Cannot have both partOf and partOfCurrent',
+       ),
+       super._(configurations, expectedLogItems);
 
   @override
   TestExpectation replaceConfiguration(Iterable<String> newConfiguration) =>
@@ -102,16 +100,16 @@ class ShouldThrow extends TestExpectation {
   final String errorMessage;
   final String? todo;
 
-  /// If `null`, expects [InvalidGenerationSourceError.element] to match the
+  /// If `null`, expects [InvalidGenerationSource.element] to match the
   /// element annotated with [ShouldThrow].
   ///
-  /// If a [String], expects [InvalidGenerationSourceError.element] to match an
+  /// If a [String], expects [InvalidGenerationSource.element] to match an
   /// element with the corresponding name.
   ///
-  /// If `true`, [InvalidGenerationSourceError.element] is expected to be
+  /// If `true`, [InvalidGenerationSource.element] is expected to be
   /// non-null.
   ///
-  /// If `false`, [InvalidGenerationSourceError.element] is not checked.
+  /// If `false`, [InvalidGenerationSource.element] is not checked.
   final dynamic element;
 
   const ShouldThrow(
@@ -120,8 +118,8 @@ class ShouldThrow extends TestExpectation {
     Object? element = true,
     Iterable<String>? configurations,
     List<String>? expectedLogItems,
-  })  : element = element ?? true,
-        super._(configurations, expectedLogItems);
+  }) : element = element ?? true,
+       super._(configurations, expectedLogItems);
 
   @override
   TestExpectation replaceConfiguration(Iterable<String> newConfiguration) =>
