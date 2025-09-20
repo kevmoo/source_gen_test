@@ -62,7 +62,7 @@ class TestBuildStep extends BuildStep {
     if (!allowedOutputs.contains(id)) {
       throw InvalidOutputException(id, 'Invalid output');
     }
-    _generatedContents[id] = normalizeLineEndings(await contents);
+    _generatedContents[id] = normalizeLineEndings(await contents).trim();
   }
 
   @override
@@ -80,17 +80,19 @@ extension GoldenExt on TestBuildStep {
     bool dryRun = false,
     DartFormatter? formatter,
   }) => Future.wait(
-    _generatedContents.entries.map((contents) async {
-      final filepath = normalizePath('$directory/${contents.key.path}');
-      final file = File(filepath);
-      if (!dryRun) {
-        await file.parent.create(recursive: true);
-        await file.writeAsString(
-          formatter?.format(contents.value) ?? contents.value,
-          flush: true,
-        );
-      }
-      return file.path;
-    }),
+    _generatedContents.entries.where((content) => content.value.isNotEmpty).map(
+      (content) async {
+        final filepath = normalizePath('$directory/${content.key.path}');
+        final file = File(filepath);
+        if (!dryRun) {
+          await file.parent.create(recursive: true);
+          await file.writeAsString(
+            formatter?.format(content.value) ?? content.value,
+            flush: true,
+          );
+        }
+        return file.path;
+      },
+    ),
   );
 }

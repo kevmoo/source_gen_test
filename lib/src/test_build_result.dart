@@ -10,7 +10,9 @@ class TestBuildResult {
     for (var id in step.allowedOutputs) {
       try {
         final code = await step.readAsString(id);
-        results._outputs[id] = code;
+        if (code.isNotEmpty) {
+          results._outputs[id] = code;
+        }
       } catch (_) {}
     }
     return results;
