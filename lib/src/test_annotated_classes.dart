@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:analyzer/dart/element/element2.dart';
+import 'package:build/build.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_gen/source_gen.dart';
@@ -11,11 +12,13 @@ import 'annotations.dart';
 import 'build_log_tracking.dart';
 import 'expectation_element.dart';
 import 'generate_for_element.dart';
+import 'goldens.dart';
 import 'init_library_reader.dart';
 import 'matchers.dart';
+import 'test_build_step.dart';
+import 'utils.dart';
 
 const _defaultConfigurationName = 'default';
-const _updateGoldensVariable = 'SOURCE_GEN_TEST_UPDATE_GOLDENS';
 
 /// If [defaultConfiguration] is not provided or `null`, "default" and the keys
 /// from [additionalGenerators] (if provided) are used.
@@ -33,6 +36,7 @@ void testAnnotatedElements<T>(
   Map<String, GeneratorForAnnotation<T>>? additionalGenerators,
   Iterable<String>? expectedAnnotatedTests,
   Iterable<String>? defaultConfiguration,
+  BuilderOptions? options,
 }) {
   for (var entry in getAnnotatedClasses<T>(
     libraryReader,
@@ -40,6 +44,7 @@ void testAnnotatedElements<T>(
     additionalGenerators: additionalGenerators,
     expectedAnnotatedTests: expectedAnnotatedTests,
     defaultConfiguration: defaultConfiguration,
+    options: options,
   )) {
     entry._registerTest();
   }
@@ -54,6 +59,7 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
   Map<String, GeneratorForAnnotation<T>>? additionalGenerators,
   Iterable<String>? expectedAnnotatedTests,
   Iterable<String>? defaultConfiguration,
+  BuilderOptions? options,
 }) {
   final generators = <String, GeneratorForAnnotation<T>>{
     _defaultConfigurationName: defaultGenerator,
@@ -181,6 +187,7 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
           configuration,
           entry.elementName,
           entry.expectation,
+          options,
         ),
       );
     }
@@ -216,6 +223,7 @@ class AnnotatedTest<T> {
   final LibraryReader _libraryReader;
   final TestExpectation expectation;
   final String _elementName;
+  final BuilderOptions? _options;
 
   String get _testName {
     var value = _elementName;
@@ -231,6 +239,7 @@ class AnnotatedTest<T> {
     this.configuration,
     this._elementName,
     this.expectation,
+    this._options,
   );
 
   void _registerTest() {
@@ -247,19 +256,19 @@ class AnnotatedTest<T> {
     throw StateError('Should never get here.');
   }
 
-  Future<String> _generate() =>
-      generateForElement<T>(generator, _libraryReader, _elementName);
+  Future<String> _generate([BuildStep? buildStep]) =>
+      generateForElement<T>(generator, _libraryReader, _elementName, buildStep);
 
   Future<void> _shouldGenerateTest() async {
-    final output = await _generate();
+    final output = normalizeLineEndings(await _generate());
     final exp = expectation as ShouldGenerate;
+
+    final expectedOutput = normalizeLineEndings(exp.expectedOutput);
 
     try {
       expect(
         output,
-        exp.contains
-            ? contains(exp.expectedOutput)
-            : equals(exp.expectedOutput),
+        exp.contains ? contains(expectedOutput) : equals(expectedOutput),
       );
     } on TestFailure {
       printOnFailure("ACTUAL CONTENT:\nr'''\n$output'''");
@@ -275,26 +284,28 @@ class AnnotatedTest<T> {
   }
 
   Future<void> _shouldGenerateFileTest() async {
-    final output = await _generate();
-    final exp = expectation as ShouldGenerateFile;
-
     if (_libraryReader is! PathAwareLibraryReader) {
       throw TestFailure(
         'Cannot run the test because _libraryReader does not contain '
-        'the directory information, and so the golden cannot be located. '
+        'the directory information, and so the golden files cannot be located. '
         'Use initializeLibraryReaderForDirectory() to automatically set it.',
       );
     }
 
+    final buildStep = TestBuildStep(_libraryReader.fileName, _options);
+
+    final output = await _generate(buildStep);
+    final exp = expectation as ShouldGenerateFile;
+
     final reader = _libraryReader;
     final path = p.join(reader.directory, exp.expectedOutputFileName);
-    final testOutput = _padOutputForFile(output);
+    final testOutput = normalizeLineEndings(_padOutputForFile(output));
 
     try {
-      if (Platform.environment[_updateGoldensVariable] == '1') {
-        File(path).writeAsStringSync(testOutput);
+      if (updateGoldens) {
+        await File(path).writeAsString(testOutput);
       } else {
-        final content = File(path).readAsStringSync();
+        final content = normalizeLineEndings(await File(path).readAsString());
         expect(testOutput, exp.contains ? contains(content) : equals(content));
       }
     } on FileSystemException catch (ex) {
@@ -303,14 +314,14 @@ class AnnotatedTest<T> {
         'Absolute path:    ${Directory.current.path}/$path\n'
         '$ex\n\n'
         'To create or update all golden files, set the environment variable '
-        '$_updateGoldensVariable=1\n\n'
+        '$updateGoldensVariable=1\n\n'
         'Make sure the directory exists and you can write the file in it.',
       );
     } on TestFailure {
       printOnFailure("ACTUAL CONTENT:\nr'''\n$output'''");
       printOnFailure(
         'To update all golden files, set the environment variable '
-        '$_updateGoldensVariable=1',
+        '$updateGoldensVariable=1',
       );
       rethrow;
     }
@@ -335,7 +346,11 @@ class AnnotatedTest<T> {
       final outputDirectory =
           File(p.join(reader.directory, exp.expectedOutputFileName)).parent;
 
-      final path = p.relative(reader.path, from: outputDirectory.path);
+      final path = p
+          .relative(reader.path, from: outputDirectory.path)
+          .split(p.separator)
+          .join('/');
+
       return "part of '$path';\n\n$output";
     }
 
