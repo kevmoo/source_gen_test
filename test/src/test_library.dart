@@ -89,3 +89,6 @@ int badTestFunc() => 42;
 @ShouldThrow('Uh...', configurations: ['vague'], element: false)
 @TestAnnotation()
 const badTestField = 42;
+
+@TestAnnotation()
+class TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANop {}

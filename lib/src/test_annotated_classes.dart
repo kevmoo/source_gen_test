@@ -33,6 +33,7 @@ void testAnnotatedElements<T>(
   Map<String, GeneratorForAnnotation<T>>? additionalGenerators,
   Iterable<String>? expectedAnnotatedTests,
   Iterable<String>? defaultConfiguration,
+  String Function(String code)? formatOutput,
 }) {
   for (var entry in getAnnotatedClasses<T>(
     libraryReader,
@@ -40,6 +41,7 @@ void testAnnotatedElements<T>(
     additionalGenerators: additionalGenerators,
     expectedAnnotatedTests: expectedAnnotatedTests,
     defaultConfiguration: defaultConfiguration,
+    formatOutput: formatOutput,
   )) {
     entry._registerTest();
   }
@@ -54,6 +56,7 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
   Map<String, GeneratorForAnnotation<T>>? additionalGenerators,
   Iterable<String>? expectedAnnotatedTests,
   Iterable<String>? defaultConfiguration,
+  String Function(String code)? formatOutput,
 }) {
   final generators = <String, GeneratorForAnnotation<T>>{
     _defaultConfigurationName: defaultGenerator,
@@ -181,6 +184,7 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
           configuration,
           entry.elementName,
           entry.expectation,
+          formatOutput: formatOutput,
         ),
       );
     }
@@ -216,6 +220,7 @@ class AnnotatedTest<T> {
   final LibraryReader _libraryReader;
   final TestExpectation expectation;
   final String _elementName;
+  final String Function(String code)? _formatOutput;
 
   String get _testName {
     var value = _elementName;
@@ -230,8 +235,9 @@ class AnnotatedTest<T> {
     this.generator,
     this.configuration,
     this._elementName,
-    this.expectation,
-  );
+    this.expectation, {
+    String Function(String code)? formatOutput,
+  }) : _formatOutput = formatOutput;
 
   void _registerTest() {
     if (expectation is ShouldGenerate) {
@@ -247,8 +253,12 @@ class AnnotatedTest<T> {
     throw StateError('Should never get here.');
   }
 
-  Future<String> _generate() =>
-      generateForElement<T>(generator, _libraryReader, _elementName);
+  Future<String> _generate() => generateForElement<T>(
+        generator,
+        _libraryReader,
+        _elementName,
+        formatOutput: _formatOutput,
+      );
 
   Future<void> _shouldGenerateTest() async {
     final output = await _generate();
