@@ -1,5 +1,5 @@
 import 'package:analyzer/dart/constant/value.dart';
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:meta/meta.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -9,9 +9,11 @@ List<ExpectationElement> genAnnotatedElements(
   LibraryReader libraryReader,
   Set<String> configDefaults,
 ) {
-  final allElements = libraryReader.allElements
-    .where((element) => element.name3 != null)
-    .toList(growable: false)..sort((a, b) => a.name3!.compareTo(b.name3!));
+  final allElements =
+      libraryReader.allElements
+          .where((element) => element.name != null)
+          .toList(growable: false)
+        ..sort((a, b) => a.name!.compareTo(b.name!));
 
   return allElements.expand((element) {
     final initialValues = _expectationElements(element).toList();
@@ -60,7 +62,7 @@ List<ExpectationElement> genAnnotatedElements(
       }
       assert(te.configurations!.isNotEmpty);
 
-      return ExpectationElement._(te, element.name3!);
+      return ExpectationElement._(te, element.name!);
     });
   }).toList();
 }
@@ -74,7 +76,7 @@ const _mappers = {
       _shouldThrow,
 };
 
-Iterable<TestExpectation> _expectationElements(Element2 element) sync* {
+Iterable<TestExpectation> _expectationElements(Element element) sync* {
   for (var entry in _mappers.entries) {
     for (var annotation in entry.key.annotationsOf(element)) {
       yield entry.value(annotation);
@@ -125,8 +127,7 @@ ShouldThrow _shouldThrow(DartObject obj) {
   );
 }
 
-List<String> _expectedLogItems(ConstantReader reader) =>
-    reader
+List<String> _expectedLogItems(ConstantReader reader) => reader
         .read('expectedLogItems')
         .listValue
         .map((obj) => obj.toStringValue()!)

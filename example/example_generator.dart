@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:source_gen/source_gen.dart';
 
@@ -11,17 +11,17 @@ class ExampleGenerator extends GeneratorForAnnotation<ExampleAnnotation> {
 
   @override
   Iterable<String> generateForAnnotatedElement(
-    Element2 element,
+    Element element,
     ConstantReader annotation,
     BuildStep buildStep,
   ) sync* {
     assert(!annotation.isNull, 'The source annotation should be set!');
 
-    if (element.name3!.contains('Bad')) {
+    if (element.name!.contains('Bad')) {
       log.info('This member might be not good.');
     }
 
-    if (element is! ClassElement2) {
+    if (element is! ClassElement) {
       throw InvalidGenerationSourceError(
         'Only supports annotated classes.',
         todo: 'Remove `TestAnnotation` from the associated element.',
@@ -29,7 +29,7 @@ class ExampleGenerator extends GeneratorForAnnotation<ExampleAnnotation> {
       );
     }
 
-    if (requireTestClassPrefix && !element.name3!.startsWith('TestClass')) {
+    if (requireTestClassPrefix && !element.name!.startsWith('TestClass')) {
       throw InvalidGenerationSourceError(
         'All classes must start with `TestClass`.',
         todo: 'Rename the type or remove the `TestAnnotation` from class.',
@@ -37,13 +37,13 @@ class ExampleGenerator extends GeneratorForAnnotation<ExampleAnnotation> {
       );
     }
 
-    yield 'const ${element.name3!}NameLength = ${element.name3!.length};';
-    yield 'const ${element.name3!}NameLowerCase = '
-        "'${element.name3!.toLowerCase()}';";
+    yield 'const ${element.name!}NameLength = ${element.name!.length};';
+    yield 'const ${element.name!}NameLowerCase = '
+        "'${element.name!.toLowerCase()}';";
 
     if (annotation.read('includeUpperCase').literalValue as bool) {
-      yield 'const ${element.name3!}NameUpperCase = '
-          "'${element.name3!.toUpperCase()}';";
+      yield 'const ${element.name!}NameUpperCase = '
+          "'${element.name!.toUpperCase()}';";
     }
   }
 

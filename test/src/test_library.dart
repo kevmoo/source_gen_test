@@ -2,8 +2,8 @@ import 'package:source_gen_test/annotations.dart';
 
 import 'test_annotation.dart';
 
-part 'goldens/test_library_file_part_of_current.dart';
 part 'test_part.dart';
+part 'goldens/test_library_file_part_of_current.dart';
 
 @ShouldGenerate(
   r'''
