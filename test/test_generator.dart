@@ -1,4 +1,4 @@
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:build/build.dart';
 import 'package:collection/collection.dart';
 import 'package:source_gen/source_gen.dart';
@@ -16,7 +16,7 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
 
   @override
   Iterable<String> generateForAnnotatedElement(
-    Element2 element,
+    Element element,
     ConstantReader annotation,
     BuildStep buildStep,
   ) sync* {
@@ -24,13 +24,13 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
       throw InvalidGenerationSourceError('Uh...');
     }
 
-    if (element.name3!.contains('Bad')) {
+    if (element.name!.contains('Bad')) {
       log.info('This member might be not good.');
     }
 
-    if (element is ClassElement2) {
-      final unsupportedFunc = element.methods2.firstWhereOrNull(
-        (me) => me.name3!.contains('unsupported'),
+    if (element is ClassElement) {
+      final unsupportedFunc = element.methods.firstWhereOrNull(
+        (me) => me.name!.contains('unsupported'),
       );
 
       if (unsupportedFunc != null) {
@@ -48,7 +48,7 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
       );
     }
 
-    if (requireTestClassPrefix && !element.name3!.startsWith('TestClass')) {
+    if (requireTestClassPrefix && !element.name!.startsWith('TestClass')) {
       throw InvalidGenerationSourceError(
         'All classes must start with `TestClass`.',
         todo: 'Rename the type or remove the `TestAnnotation` from class.',
@@ -56,9 +56,9 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
       );
     }
 
-    yield 'const ${element.name3!}NameLength = ${element.name3!.length};';
-    yield 'const ${element.name3!}NameLowerCase = '
-        "'${element.name3!.toLowerCase()}';";
+    yield 'const ${element.name!}NameLength = ${element.name!.length};';
+    yield 'const ${element.name!}NameLowerCase = '
+        "'${element.name!.toLowerCase()}';";
   }
 
   @override
