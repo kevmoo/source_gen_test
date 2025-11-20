@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:analyzer/dart/element/element2.dart';
+import 'package:analyzer/dart/element/element.dart';
 import 'package:meta/meta.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_gen/source_gen.dart';
@@ -90,8 +90,9 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
       );
     }
 
-    final unknownShouldThrowDefaults =
-        defaultConfigSet.where((v) => !generators.containsKey(v)).toSet();
+    final unknownShouldThrowDefaults = defaultConfigSet
+        .where((v) => !generators.containsKey(v))
+        .toSet();
     if (unknownShouldThrowDefaults.isNotEmpty) {
       throw ArgumentError.value(
         defaultConfiguration,
@@ -187,9 +188,8 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
   }
 
   if (mapMissingConfigs.isNotEmpty) {
-    final elements =
-        mapMissingConfigs.entries.toList()
-          ..sort((a, b) => a.key.compareTo(b.key));
+    final elements = mapMissingConfigs.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
 
     final message = elements
         .map((e) {
@@ -332,8 +332,9 @@ class AnnotatedTest<T> {
 
     if (exp.partOfCurrent) {
       final reader = _libraryReader as PathAwareLibraryReader;
-      final outputDirectory =
-          File(p.join(reader.directory, exp.expectedOutputFileName)).parent;
+      final outputDirectory = File(
+        p.join(reader.directory, exp.expectedOutputFileName),
+      ).parent;
 
       final path = p.relative(reader.path, from: outputDirectory.path);
       return "part of '$path';\n\n$output";
@@ -355,8 +356,8 @@ class AnnotatedTest<T> {
         assert(exp.element is String);
         expectedElementName = exp.element as String;
       }
-      elementMatcher = const TypeMatcher<Element2>().having(
-        (e) => e.name3,
+      elementMatcher = const TypeMatcher<Element>().having(
+        (e) => e.name,
         'name',
         expectedElementName,
       );
