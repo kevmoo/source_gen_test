@@ -1,3 +1,9 @@
+## 1.3.4-genLib
+
+- Add support for `BuilderOptions` via a custom `TestBuildStep` implementation (handle patterns in extensions and multiple outputs). `TestBuildStep` keeps generated code in memory.
+- Implement `generateForLibrary()` to generate all outputs for the specified library (with support for generating the golden files). Clients can inspect build outputs via the returned `TestBuildResults`.
+- Normalize line-endings and paths for better support of Windows/MacOS platforms.
+
 ## 1.3.3
 
 - Update dependencies
