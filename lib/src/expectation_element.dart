@@ -128,10 +128,10 @@ ShouldThrow _shouldThrow(DartObject obj) {
 }
 
 List<String> _expectedLogItems(ConstantReader reader) => reader
-        .read('expectedLogItems')
-        .listValue
-        .map((obj) => obj.toStringValue()!)
-        .toList();
+    .read('expectedLogItems')
+    .listValue
+    .map((obj) => obj.toStringValue()!)
+    .toList();
 
 Set<String>? _configurations(ConstantReader reader) {
   final field = reader.read('configurations');

@@ -96,8 +96,9 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
       );
     }
 
-    final unknownShouldThrowDefaults =
-        defaultConfigSet.where((v) => !generators.containsKey(v)).toSet();
+    final unknownShouldThrowDefaults = defaultConfigSet
+        .where((v) => !generators.containsKey(v))
+        .toSet();
     if (unknownShouldThrowDefaults.isNotEmpty) {
       throw ArgumentError.value(
         defaultConfiguration,
@@ -194,9 +195,8 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
   }
 
   if (mapMissingConfigs.isNotEmpty) {
-    final elements =
-        mapMissingConfigs.entries.toList()
-          ..sort((a, b) => a.key.compareTo(b.key));
+    final elements = mapMissingConfigs.entries.toList()
+      ..sort((a, b) => a.key.compareTo(b.key));
 
     final message = elements
         .map((e) {
@@ -343,8 +343,9 @@ class AnnotatedTest<T> {
 
     if (exp.partOfCurrent) {
       final reader = _libraryReader as PathAwareLibraryReader;
-      final outputDirectory =
-          File(p.join(reader.directory, exp.expectedOutputFileName)).parent;
+      final outputDirectory = File(
+        p.join(reader.directory, exp.expectedOutputFileName),
+      ).parent;
 
       final path = p
           .relative(reader.path, from: outputDirectory.path)

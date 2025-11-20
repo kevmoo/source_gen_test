@@ -52,18 +52,18 @@ Future<String> generateForElement<T>(
 
   if (annotation == null) {
     final annotationFromTestLib = element.metadata.annotations
-            .map((ea) => ea.computeConstantValue()!)
-            .where((obj) {
-              if (obj.type is InterfaceType) {
+        .map((ea) => ea.computeConstantValue()!)
+        .where((obj) {
+          if (obj.type is InterfaceType) {
             final uri = (obj.type as InterfaceType).element.library.uri;
-                return uri.isScheme('package') &&
-                    uri.pathSegments.first == testPackageName;
-              }
+            return uri.isScheme('package') &&
+                uri.pathSegments.first == testPackageName;
+          }
 
-              return false;
-            })
+          return false;
+        })
         .where((obj) => obj.type!.element!.name == T.toString())
-            .toList();
+        .toList();
 
     String msg;
     if (annotationFromTestLib.length == 1) {
