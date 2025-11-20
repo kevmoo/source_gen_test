@@ -24,7 +24,8 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
       throw InvalidGenerationSourceError('Uh...');
     }
 
-    if (element.name!.contains('Bad')) {
+    final name = element.name!;
+    if (name.contains('Bad')) {
       log.info('This member might be not good.');
     }
 
@@ -48,7 +49,7 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
       );
     }
 
-    if (requireTestClassPrefix && !element.name!.startsWith('TestClass')) {
+    if (requireTestClassPrefix && !name.startsWith('TestClass')) {
       throw InvalidGenerationSourceError(
         'All classes must start with `TestClass`.',
         todo: 'Rename the type or remove the `TestAnnotation` from class.',
@@ -56,9 +57,9 @@ class TestGenerator extends GeneratorForAnnotation<TestAnnotation> {
       );
     }
 
-    yield 'const ${element.name!}NameLength = ${element.name!.length};';
-    yield 'const ${element.name!}NameLowerCase = '
-        "'${element.name!.toLowerCase()}';";
+    yield 'const ${name}NameLength = ${name.length};';
+    yield 'const ${name}NameLowerCase = '
+        "'${name.toLowerCase()}';";
   }
 
   @override
