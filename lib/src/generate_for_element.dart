@@ -11,14 +11,16 @@ import 'package:source_gen/src/output_helpers.dart'
     show normalizeGeneratorOutput;
 
 import 'init_library_reader.dart' show testPackageName;
+import 'test_build_step.dart';
 
 final _testAnnotationWarnings = <String>{};
 
 Future<String> generateForElement<T>(
   GeneratorForAnnotation<T> generator,
   LibraryReader libraryReader,
-  String name,
-) async {
+  String name, [
+  BuildStep? buildStep,
+]) async {
   final elements = libraryReader.allElements
       .where((e) => e.name == name)
       .toList();
@@ -90,7 +92,7 @@ Future<String> generateForElement<T>(
     generator.generateForAnnotatedElement(
       element,
       ConstantReader(annotation),
-      _MockBuildStep(),
+      buildStep ?? MockBuildStep(),
     ),
   );
 
@@ -101,9 +103,4 @@ Future<String> generateForElement<T>(
   );
 
   return formatter.format(generated);
-}
-
-class _MockBuildStep extends BuildStep {
-  @override
-  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
