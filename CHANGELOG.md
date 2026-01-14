@@ -1,3 +1,7 @@
+## 1.3.4
+
+- Required `analyzer: '>=9.0.0 <11.0.0'`
+
 ## 1.3.3
 
 - Update dependencies
