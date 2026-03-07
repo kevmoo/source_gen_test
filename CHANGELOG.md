@@ -1,3 +1,18 @@
+## 1.3.4
+
+- Allow `analyzer: '>=9.0.0 <11.0.0'`
+
+## 1.3.3
+
+- Update dependencies
+  - `analyzer: ^9.0.0`
+  - `build_test: ^3.5.4`
+  - `build: ^4.0.3`
+  - `dart_style: ^3.1.3`
+  - `meta: ^1.16.0`
+  - `source_gen: ^4.1.1`
+  - `test: ^1.27.0`
+
 ## 1.3.2
 
 - Allow `build: '>=3.0.0 <5.0.0'`.
