@@ -92,6 +92,75 @@ const TestClass2NameLength = 10;
 const TestClass2NameLowerCase = 'testclass2';
 ''');
     });
+
+    group(
+      'formatOutput',
+      () {
+        test(
+          'should format the generated source code with `DartFormatter` when `formatOutput` is `null`.',
+          () async {
+            final output = await generateForElement(
+              const TestGenerator(),
+              reader,
+              'TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANop',
+              formatOutput: null,
+            );
+            printOnFailure(output);
+            expect(
+              output,
+              r'''
+const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLength =
+    68;
+
+const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLowerCase =
+    testclassthathasaverylongnamethatshouldnotwrapwhenformatoutputisanop;
+''',
+            );
+          },
+        );
+
+        test(
+          'should not format the generated source code when `formatOutput` is a NOP.',
+          () async {
+            final output = await generateForElement(
+              const TestGenerator(),
+              reader,
+              'TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANop',
+              formatOutput: (code) => code,
+            );
+            printOnFailure(output);
+            expect(
+              output,
+              r'''
+const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLength = 68;
+
+const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLowerCase = testclassthathasaverylongnamethatshouldnotwrapwhenformatoutputisanop;''',
+            );
+          },
+        );
+
+        test(
+          'should format the generated source code with a custom formatter when `formatOutput` is a custom formatter.',
+          () async {
+            final output = await generateForElement(
+              const TestGenerator(),
+              reader,
+              'TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANop',
+              formatOutput: (code) => '$code\n',
+            );
+            printOnFailure(output);
+            expect(
+              output,
+              r'''
+const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLength = 68;
+
+const TestClassThatHasAVeryLongNameThatShouldNotWrapWhenFormatOutputIsANopNameLowerCase = testclassthathasaverylongnamethatshouldnotwrapwhenformatoutputisanop;
+''',
+            );
+          },
+        );
+      },
+    );
   });
 
   test('throwsInvalidGenerationSourceError', () async {
