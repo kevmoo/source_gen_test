@@ -68,13 +68,6 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
         );
       }
     }
-    if (additionalGenerators.containsKey(null)) {
-      throw ArgumentError.value(
-        additionalGenerators,
-        'additionalGenerators',
-        'Contained an unsupported key `null`.',
-      );
-    }
     generators.addAll(additionalGenerators);
   }
 
