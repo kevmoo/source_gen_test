@@ -1,11 +1,12 @@
+import 'package:checks/checks.dart';
 import 'package:source_gen_test/src/build_log_tracking.dart';
-import 'package:test/test.dart';
+import 'package:test/scaffolding.dart';
 
 void main() {
   group('after calling initializeBuildLogTracking', () {
     initializeBuildLogTracking();
     test('calling init again throws', () {
-      expect(initializeBuildLogTracking, throwsStateError);
+      check(initializeBuildLogTracking).throws<StateError>();
     });
 
     // TODO: actually test something
@@ -14,11 +15,11 @@ void main() {
 
   group('without calling initializeBuildLogTracking', () {
     test('accessing buildLogItems throws', () {
-      expect(() => buildLogItems, throwsStateError);
+      check(() => buildLogItems).throws<StateError>();
     });
 
     test('calling clearBuildLog throws', () {
-      expect(clearBuildLog, throwsStateError);
+      check(clearBuildLog).throws<StateError>();
     });
   });
 }
