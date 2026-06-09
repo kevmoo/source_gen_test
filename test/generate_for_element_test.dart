@@ -1,9 +1,10 @@
+import 'package:checks/checks.dart';
+import 'package:source_gen/source_gen.dart';
 import 'package:source_gen_test/src/build_log_tracking.dart';
 import 'package:source_gen_test/src/generate_for_element.dart';
 import 'package:source_gen_test/src/init_library_reader.dart';
-import 'package:source_gen_test/src/matchers.dart';
 import 'package:source_gen_test/src/test_annotated_classes.dart';
-import 'package:test/test.dart';
+import 'package:test/scaffolding.dart';
 
 import 'test_generator.dart';
 
@@ -27,14 +28,15 @@ class TestClass{}
         'annotations.dart': _testAnnotationContent,
       }, 'bad_lib.dart');
 
-      expect(
-        () => testAnnotatedElements(badReader, const TestGenerator()),
-        throwsInvalidGenerationSourceError(
+      check(
+          () => testAnnotatedElements(badReader, const TestGenerator()),
+        ).throws<InvalidGenerationSourceError>()
+        ..has((e) => e.message, 'message').equals(
           'There are multiple annotations for these configurations: "c".',
-          todoMatcher:
-              'Ensure each configuration is only represented once per member.',
-        ),
-      );
+        )
+        ..has((e) => e.todo, 'todo').equals(
+          'Ensure each configuration is only represented once per member.',
+        );
     });
 
     test('annotation with no configuration', () async {
@@ -49,13 +51,14 @@ class EmptyConfig{}
         'annotations.dart': _testAnnotationContent,
       }, 'bad_lib.dart');
 
-      expect(
-        () => testAnnotatedElements(badReader, const TestGenerator()),
-        throwsInvalidGenerationSourceError(
-          '`configuration` cannot be empty.',
-          todoMatcher: 'Leave it `null`.',
-        ),
-      );
+      check(
+          () => testAnnotatedElements(badReader, const TestGenerator()),
+        ).throws<InvalidGenerationSourceError>()
+        ..has(
+          (e) => e.message,
+          'message',
+        ).equals('`configuration` cannot be empty.')
+        ..has((e) => e.todo, 'todo').equals('Leave it `null`.');
     });
   });
 
@@ -72,7 +75,7 @@ class EmptyConfig{}
         'TestClass1',
       );
       printOnFailure(output);
-      expect(output, r'''
+      check(output).equals(r'''
 const TestClass1NameLength = 10;
 
 const TestClass1NameLowerCase = 'testclass1';
@@ -86,7 +89,7 @@ const TestClass1NameLowerCase = 'testclass1';
         'TestClass2',
       );
       printOnFailure(output);
-      expect(output, r'''
+      check(output).equals(r'''
 const TestClass2NameLength = 10;
 
 const TestClass2NameLowerCase = 'testclass2';
@@ -95,13 +98,18 @@ const TestClass2NameLowerCase = 'testclass2';
   });
 
   test('throwsInvalidGenerationSourceError', () async {
-    await expectLater(
-      () => generateForElement(const TestGenerator(), reader, 'BadTestClass'),
-      throwsInvalidGenerationSourceError(
-        'All classes must start with `TestClass`.',
-        todoMatcher:
-            'Rename the type or remove the `TestAnnotation` from class.',
-      ),
+    await check(
+      generateForElement(const TestGenerator(), reader, 'BadTestClass'),
+    ).throws<InvalidGenerationSourceError>(
+      (it) => it
+        ..has(
+          (e) => e.message,
+          'message',
+        ).equals('All classes must start with `TestClass`.')
+        ..has(
+          (e) => e.todo,
+          'todo',
+        ).equals('Rename the type or remove the `TestAnnotation` from class.'),
     );
   });
 
@@ -151,7 +159,7 @@ const TestClass2NameLowerCase = 'testclass2';
           expectedAnnotatedTests: validExpectedAnnotatedTests,
         );
 
-        expect(list, hasLength(25));
+        check(list).length.equals(25);
       });
 
       test('valid configuration', () {
@@ -163,7 +171,7 @@ const TestClass2NameLowerCase = 'testclass2';
           defaultConfiguration: ['default', 'no-prefix-required', 'vague'],
         );
 
-        expect(list, hasLength(25));
+        check(list).length.equals(25);
       });
 
       test('different defaultConfiguration', () {
@@ -175,7 +183,7 @@ const TestClass2NameLowerCase = 'testclass2';
           defaultConfiguration: ['default'],
         );
 
-        expect(list, hasLength(22));
+        check(list).length.equals(22);
       });
 
       test('different defaultConfiguration', () {
@@ -187,24 +195,25 @@ const TestClass2NameLowerCase = 'testclass2';
           defaultConfiguration: ['no-prefix-required'],
         );
 
-        expect(list, hasLength(22));
+        check(list).length.equals(22);
       });
     });
     group('defaultConfiguration', () {
       test('empty', () {
-        expect(
+        _checkArgumentError(
           () => testAnnotatedElements(
             reader,
             const TestGenerator(),
             additionalGenerators: validAdditionalGenerators,
             defaultConfiguration: [],
           ),
-          _throwsArgumentError('Cannot be empty.', 'defaultConfiguration'),
+          'Cannot be empty.',
+          'defaultConfiguration',
         );
       });
 
       test('unknown item', () {
-        expect(
+        _checkArgumentError(
           () => testAnnotatedElements(
             reader,
             const TestGenerator(),
@@ -215,18 +224,16 @@ const TestClass2NameLowerCase = 'testclass2';
             },
             defaultConfiguration: ['unknown'],
           ),
-          _throwsArgumentError(
-            'Contains values not associated with provided generators: '
-                '"unknown".',
-            'defaultConfiguration',
-          ),
+          'Contains values not associated with provided generators: '
+              '"unknown".',
+          'defaultConfiguration',
         );
       });
     });
 
     group('expectedAnnotatedTests', () {
       test('too many', () {
-        expect(
+        _checkArgumentError(
           () => testAnnotatedElements(
             reader,
             const TestGenerator(),
@@ -237,31 +244,27 @@ const TestClass2NameLowerCase = 'testclass2';
               'extra',
             ],
           ),
-          _throwsArgumentError(
-            'There are unexpected items',
-            'expectedAnnotatedTests',
-          ),
+          'There are unexpected items',
+          'expectedAnnotatedTests',
         );
       });
 
       test('too few', () {
-        expect(
+        _checkArgumentError(
           () => testAnnotatedElements(
             reader,
             const TestGenerator(),
             expectedAnnotatedTests: ['TestClass1', 'TestClass2'],
           ),
-          _throwsArgumentError(
-            'There are items missing',
-            'expectedAnnotatedTests',
-          ),
+          'There are items missing',
+          'expectedAnnotatedTests',
         );
       });
     });
 
     group('additionalGenerators', () {
       test('unused generator fails', () {
-        expect(
+        _checkArgumentError(
           () => testAnnotatedElements(
             reader,
             const TestGenerator(),
@@ -278,35 +281,31 @@ const TestClass2NameLowerCase = 'testclass2';
             // 'vague' is excluded here!
             defaultConfiguration: ['default', 'no-prefix-required'],
           ),
-          _throwsArgumentError(
-            'Some of the specified generators were not used for their '
-            'corresponding configurations: "extra".\n'
-            'Remove the entry from `additionalGenerators` or update '
-            '`defaultConfiguration`.',
-          ),
+          'Some of the specified generators were not used for their '
+          'corresponding configurations: "extra".\n'
+          'Remove the entry from `additionalGenerators` or update '
+          '`defaultConfiguration`.',
         );
       });
 
       test('missing a specified generator fails', () {
-        expect(
+        _checkArgumentError(
           () => testAnnotatedElements(reader, const TestGenerator()),
-          _throwsArgumentError(
-            'There are elements defined with configurations with no '
-            'associated generator provided.\n'
-            '`BadTestClass`: "no-prefix-required", "vague"; '
-            '`TestClass1`: "no-prefix-required", "vague"; '
-            '`TestClass2`: "vague"; '
-            '`TestClassFileNoPart`: "no-prefix-required", "vague"; '
-            '`TestClassFilePartOf`: "no-prefix-required", "vague"; '
-            '`TestClassFilePartOfCurrent`: "no-prefix-required", "vague"; '
-            '`badTestField`: "vague"; '
-            '`badTestFunc`: "vague"',
-          ),
+          'There are elements defined with configurations with no '
+          'associated generator provided.\n'
+          '`BadTestClass`: "no-prefix-required", "vague"; '
+          '`TestClass1`: "no-prefix-required", "vague"; '
+          '`TestClass2`: "vague"; '
+          '`TestClassFileNoPart`: "no-prefix-required", "vague"; '
+          '`TestClassFilePartOf`: "no-prefix-required", "vague"; '
+          '`TestClassFilePartOfCurrent`: "no-prefix-required", "vague"; '
+          '`badTestField`: "vague"; '
+          '`badTestFunc`: "vague"',
         );
       });
 
       test('key "default" not allowed', () {
-        expect(
+        _checkArgumentError(
           () => testAnnotatedElements(
             reader,
             const TestGenerator(),
@@ -314,15 +313,13 @@ const TestClass2NameLowerCase = 'testclass2';
               'default': TestGenerator(requireTestClassPrefix: false),
             },
           ),
-          _throwsArgumentError(
-            'Contained an unsupported key "default".',
-            'additionalGenerators',
-          ),
+          'Contained an unsupported key "default".',
+          'additionalGenerators',
         );
       });
 
       test('key "" not allowed', () {
-        expect(
+        _checkArgumentError(
           () => testAnnotatedElements(
             reader,
             const TestGenerator(),
@@ -330,18 +327,25 @@ const TestClass2NameLowerCase = 'testclass2';
               '': TestGenerator(requireTestClassPrefix: false),
             },
           ),
-          _throwsArgumentError(
-            'Contained an unsupported key "".',
-            'additionalGenerators',
-          ),
+          'Contained an unsupported key "".',
+          'additionalGenerators',
         );
       });
     });
   });
 }
 
-Matcher _throwsArgumentError(Object? matcher, [String? name]) => throwsA(
-  isArgumentError
-      .having((e) => e.message, 'message', matcher)
-      .having((ae) => ae.name, 'name', name),
-);
+void _checkArgumentError(
+  void Function() callback,
+  String expectedMessagePart, [
+  String? expectedName,
+]) {
+  final error = check(callback).throws<ArgumentError>()
+    ..has(
+      (e) => e.message,
+      'message',
+    ).isA<String>().contains(expectedMessagePart);
+  if (expectedName != null) {
+    error.has((e) => e.name, 'name').equals(expectedName);
+  }
+}
