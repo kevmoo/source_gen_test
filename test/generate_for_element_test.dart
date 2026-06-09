@@ -28,19 +28,15 @@ class TestClass{}
         'annotations.dart': _testAnnotationContent,
       }, 'bad_lib.dart');
 
-      final error = check(
-        () => testAnnotatedElements(badReader, const TestGenerator()),
-      ).throws<InvalidGenerationSourceError>();
-      error
-          .has((e) => e.message, 'message')
-          .equals(
-            'There are multiple annotations for these configurations: "c".',
-          );
-      error
-          .has((e) => e.todo, 'todo')
-          .equals(
-            'Ensure each configuration is only represented once per member.',
-          );
+      check(
+          () => testAnnotatedElements(badReader, const TestGenerator()),
+        ).throws<InvalidGenerationSourceError>()
+        ..has((e) => e.message, 'message').equals(
+          'There are multiple annotations for these configurations: "c".',
+        )
+        ..has((e) => e.todo, 'todo').equals(
+          'Ensure each configuration is only represented once per member.',
+        );
     });
 
     test('annotation with no configuration', () async {
@@ -55,13 +51,14 @@ class EmptyConfig{}
         'annotations.dart': _testAnnotationContent,
       }, 'bad_lib.dart');
 
-      final error = check(
-        () => testAnnotatedElements(badReader, const TestGenerator()),
-      ).throws<InvalidGenerationSourceError>();
-      error
-          .has((e) => e.message, 'message')
-          .equals('`configuration` cannot be empty.');
-      error.has((e) => e.todo, 'todo').equals('Leave it `null`.');
+      check(
+          () => testAnnotatedElements(badReader, const TestGenerator()),
+        ).throws<InvalidGenerationSourceError>()
+        ..has(
+          (e) => e.message,
+          'message',
+        ).equals('`configuration` cannot be empty.')
+        ..has((e) => e.todo, 'todo').equals('Leave it `null`.');
     });
   });
 
@@ -343,11 +340,11 @@ void _checkArgumentError(
   String expectedMessagePart, [
   String? expectedName,
 ]) {
-  final error = check(callback).throws<ArgumentError>();
-  error
-      .has((e) => e.message, 'message')
-      .isA<String>()
-      .contains(expectedMessagePart);
+  final error = check(callback).throws<ArgumentError>()
+    ..has(
+      (e) => e.message,
+      'message',
+    ).isA<String>().contains(expectedMessagePart);
   if (expectedName != null) {
     error.has((e) => e.name, 'name').equals(expectedName);
   }
