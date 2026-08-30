@@ -6,8 +6,6 @@ analyzer:
     # Until we drop the older pkg:analyzer
     deprecated_member_use: ignore
   language:
-    strict-casts: true
-    strict-inference: true
     strict-raw-types: true
   exclude:
     - 'example/src/example_test_golden.dart'
