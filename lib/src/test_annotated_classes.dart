@@ -55,48 +55,11 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
   Iterable<String>? expectedAnnotatedTests,
   Iterable<String>? defaultConfiguration,
 }) {
-  final generators = <String, GeneratorForAnnotation<T>>{
-    _defaultConfigurationName: defaultGenerator,
-  };
-  if (additionalGenerators != null) {
-    for (var invalidKey in const [_defaultConfigurationName, '']) {
-      if (additionalGenerators.containsKey(invalidKey)) {
-        throw ArgumentError.value(
-          additionalGenerators,
-          'additionalGenerators',
-          'Contained an unsupported key "$invalidKey".',
-        );
-      }
-    }
-    generators.addAll(additionalGenerators);
-  }
-
-  Set<String> defaultConfigSet;
-
-  if (defaultConfiguration != null) {
-    defaultConfigSet = defaultConfiguration.toSet();
-    if (defaultConfigSet.isEmpty) {
-      throw ArgumentError.value(
-        defaultConfiguration,
-        'defaultConfiguration',
-        'Cannot be empty.',
-      );
-    }
-
-    final unknownShouldThrowDefaults = defaultConfigSet
-        .where((v) => !generators.containsKey(v))
-        .toSet();
-    if (unknownShouldThrowDefaults.isNotEmpty) {
-      throw ArgumentError.value(
-        defaultConfiguration,
-        'defaultConfiguration',
-        'Contains values not associated with provided generators: '
-            '${unknownShouldThrowDefaults.map((v) => '"$v"').join(', ')}.',
-      );
-    }
-  } else {
-    defaultConfigSet = generators.keys.toSet();
-  }
+  final (:generators, :defaultConfigSet) = _resolveGeneratorsAndDefaults(
+    defaultGenerator,
+    additionalGenerators,
+    defaultConfiguration,
+  );
 
   final annotatedElements = genAnnotatedElements(
     libraryReader,
@@ -125,32 +88,10 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
     );
   }
 
-  if (expectedAnnotatedTests != null) {
-    final expectedList = expectedAnnotatedTests.toList();
-
-    final missing = <String>[];
-
-    for (var elementName in annotatedElements.map((e) => e.elementName)) {
-      if (!expectedList.remove(elementName)) {
-        missing.add(elementName);
-      }
-    }
-
-    if (expectedList.isNotEmpty) {
-      throw ArgumentError.value(
-        expectedList.map((e) => "'$e'").join(', '),
-        'expectedAnnotatedTests',
-        'There are unexpected items',
-      );
-    }
-    if (missing.isNotEmpty) {
-      throw ArgumentError.value(
-        missing.map((e) => "'$e'").join(', '),
-        'expectedAnnotatedTests',
-        'There are items missing',
-      );
-    }
-  }
+  _validateExpectedAnnotatedTests(
+    expectedAnnotatedTests,
+    annotatedElements.map((e) => e.elementName),
+  );
 
   final result = <AnnotatedTest<T>>[];
 
@@ -200,6 +141,90 @@ List<AnnotatedTest<T>> getAnnotatedClasses<T>(
   }
 
   return result;
+}
+
+({
+  Map<String, GeneratorForAnnotation<T>> generators,
+  Set<String> defaultConfigSet,
+})
+_resolveGeneratorsAndDefaults<T>(
+  GeneratorForAnnotation<T> defaultGenerator,
+  Map<String, GeneratorForAnnotation<T>>? additionalGenerators,
+  Iterable<String>? defaultConfiguration,
+) {
+  final generators = <String, GeneratorForAnnotation<T>>{
+    _defaultConfigurationName: defaultGenerator,
+  };
+  if (additionalGenerators != null) {
+    for (var invalidKey in const [_defaultConfigurationName, '']) {
+      if (additionalGenerators.containsKey(invalidKey)) {
+        throw ArgumentError.value(
+          additionalGenerators,
+          'additionalGenerators',
+          'Contained an unsupported key "$invalidKey".',
+        );
+      }
+    }
+    generators.addAll(additionalGenerators);
+  }
+
+  if (defaultConfiguration == null) {
+    return (generators: generators, defaultConfigSet: generators.keys.toSet());
+  }
+
+  final defaultConfigSet = defaultConfiguration.toSet();
+  if (defaultConfigSet.isEmpty) {
+    throw ArgumentError.value(
+      defaultConfiguration,
+      'defaultConfiguration',
+      'Cannot be empty.',
+    );
+  }
+
+  final unknownShouldThrowDefaults = defaultConfigSet
+      .where((v) => !generators.containsKey(v))
+      .toSet();
+  if (unknownShouldThrowDefaults.isNotEmpty) {
+    throw ArgumentError.value(
+      defaultConfiguration,
+      'defaultConfiguration',
+      'Contains values not associated with provided generators: '
+          '${unknownShouldThrowDefaults.map((v) => '"$v"').join(', ')}.',
+    );
+  }
+
+  return (generators: generators, defaultConfigSet: defaultConfigSet);
+}
+
+void _validateExpectedAnnotatedTests(
+  Iterable<String>? expectedAnnotatedTests,
+  Iterable<String> actualAnnotatedTests,
+) {
+  if (expectedAnnotatedTests == null) return;
+
+  final expectedList = expectedAnnotatedTests.toList();
+  final missing = <String>[];
+
+  for (var elementName in actualAnnotatedTests) {
+    if (!expectedList.remove(elementName)) {
+      missing.add(elementName);
+    }
+  }
+
+  if (expectedList.isNotEmpty) {
+    throw ArgumentError.value(
+      expectedList.map((e) => "'$e'").join(', '),
+      'expectedAnnotatedTests',
+      'There are unexpected items',
+    );
+  }
+  if (missing.isNotEmpty) {
+    throw ArgumentError.value(
+      missing.map((e) => "'$e'").join(', '),
+      'expectedAnnotatedTests',
+      'There are items missing',
+    );
+  }
 }
 
 @visibleForTesting
