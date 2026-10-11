@@ -39,11 +39,10 @@ Future<String> generateForElement<T>(
     final rootProperties = elements
         .whereType<PropertyInducingElement>()
         .toList();
-    if (rootProperties.length == 1) {
-      element = rootProperties[0];
-    } else {
+    if (rootProperties.length != 1) {
       throw UnimplementedError();
     }
+    element = rootProperties[0];
   }
 
   var annotation = generator.typeChecker.firstAnnotationOf(element);
