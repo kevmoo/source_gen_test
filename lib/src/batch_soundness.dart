@@ -524,10 +524,10 @@ Future<String> _invokeCaseGenerator(
     rawOutput = await generator.generateForAnnotatedElement(
       element,
       ConstantReader(annotation),
-      _BatchBuildStep(),
+      _MockBuildStep(),
     );
   } else {
-    rawOutput = await generator.generate(reader, _BatchBuildStep());
+    rawOutput = await generator.generate(reader, _MockBuildStep());
   }
   return _normalizeGeneratorOutput(rawOutput).join('\n\n');
 }
@@ -593,7 +593,7 @@ Stream<String> _normalizeGeneratorCollection(Object value) async* {
   throw ArgumentError('Unexpected generator output: $value');
 }
 
-class _BatchBuildStep extends BuildStep {
+class _MockBuildStep extends BuildStep {
   @override
   dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
 }
