@@ -6,10 +6,10 @@ description: >-
 repository: https://github.com/kevmoo/source_gen_test
 
 environment:
-  sdk: ^3.9.0
+  sdk: ^3.12.0
 
 dependencies:
-  analyzer: '>=9.0.0 <15.0.0'
+  analyzer: '>=13.0.0 <15.0.0'
   build: '>=4.0.3 <6.0.0'
   build_test: ^3.5.4
   cli_util: '>=0.4.2 <0.7.0'

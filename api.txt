@@ -1,5 +1,5 @@
 environment:
-  sdk: ^3.9.0
+  sdk: ^3.12.0
 package:source_gen_test/source_gen_test.dart:
   buildLogItems (static getter: List<String>)
   cartesianProduct (function: List<Map<K, V>> Function<K, V>(Map<K, List<V>>))
