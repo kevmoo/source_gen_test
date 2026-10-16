@@ -664,7 +664,9 @@ CodegenIssue _buildStaticIssue(
 ) => (
   caseId: c.id,
   kind: CodegenIssueKind.staticError,
-  message: '[$fileLabel:${d.diagnosticCode.lowerCaseName}] ${d.message}',
+  message:
+      '[$fileLabel:${d.diagnosticCode.name.toLowerCase()}] '
+      '${d.message}',
   declarations: c.declarations,
   generatedCode: generatedCode,
 );
@@ -706,7 +708,7 @@ const Set<String> _ignoredWarningCodes = {
 bool _isRelevantDiagnostic(Diagnostic d, {required bool includeWarnings}) {
   if (d.severity == Severity.error) return true;
   if (!includeWarnings || d.severity != Severity.warning) return false;
-  return !_ignoredWarningCodes.contains(d.diagnosticCode.lowerCaseName);
+  return !_ignoredWarningCodes.contains(d.diagnosticCode.name.toLowerCase());
 }
 
 Map<String, String> _buildSymbolToCaseIdMap(List<CodegenCase> cases) {
