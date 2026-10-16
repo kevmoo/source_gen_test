@@ -44,3 +44,36 @@ class TestClass2 {}
 ```
 
 Other helpers are also provided.
+
+## Combinatorial Batch Verification (`verifyGeneratorBatch`)
+
+Use `cartesianProduct` and `verifyGeneratorBatch` to validate large matrices of
+AST/declaration permutations against a `Generator` or `GeneratorForAnnotation`
+in a single shared `package:analyzer` context and batched `Isolate.spawnUri`
+runtime pass:
+
+```dart
+final axes = cartesianProduct({
+  'fieldType': ['int', 'int?', 'List<int?>'],
+  'includeIfNull': ['true', 'false'],
+});
+
+final report = await verifyGeneratorBatch(
+  generator: MyGenerator(),
+  imports: const ["import 'package:my_pkg/annotations.dart';"],
+  cases: [
+    for (var i = 0; i < axes.length; i++)
+      CodegenCase(
+        id: 'case_$i',
+        declarations: '''
+@MyAnnotation(includeIfNull: ${axes[i]['includeIfNull']})
+class Case$i {
+  final ${axes[i]['fieldType']} value;
+  Case$i(this.value);
+}
+''',
+        runtimeCheck: 'final c = Case$i(null);',
+      ),
+  ],
+);
+```

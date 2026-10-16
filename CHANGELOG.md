@@ -1,9 +1,10 @@
-## 1.4.0-wip
+## 1.4.0
 
 - Add `verifyGeneratorBatch`, `cartesianProduct`, `formatCodegenBatchReport`,
   `CodegenCase`, `CodegenIssue`, `CodegenIssueKind`, and `CodegenBatchReport`
-  for AST-combinatorial batch verification of `GeneratorForAnnotation`
-  generators.
+  for AST-combinatorial batch verification of `Generator` and
+  `GeneratorForAnnotation` implementations.
+- Require `sdk: ^3.12.0` and `analyzer: '>=13.0.0 <15.0.0'`.
 
 ## 1.3.8
 

@@ -1,27 +1,28 @@
 ---
 name: source-gen-fuzz
 description: >-
-  Stress-tests Dart source_gen GeneratorForAnnotation code generators by
-  extracting AST control-flow branch axes, expanding combinatorial declaration
-  matrices with cartesianProduct, and validating per-element generated output
-  through verifyGeneratorBatch across diagnostic contracts, analyzer static
-  errors and warnings, and batched Isolate.spawnUri runtime round-trip
-  execution. Use when fuzzing or stress-testing a GeneratorForAnnotation
-  package, auditing code generator soundness across AST permutations, or
-  running /source-gen-fuzz. Do not use for byte-stream parser fuzzing with
-  libFuzzer (use fuzz) or single-case golden expectation updates.
+  Stress-tests Dart source_gen Generator and GeneratorForAnnotation code
+  generators by extracting AST control-flow branch axes, expanding combinatorial
+  declaration matrices with cartesianProduct, and validating per-case generated
+  output through verifyGeneratorBatch across diagnostic contracts, analyzer
+  static errors and warnings, and batched Isolate.spawnUri runtime round-trip
+  execution. Use when fuzzing or stress-testing a source_gen generator package,
+  auditing code generator soundness across AST permutations, or running
+  /source-gen-fuzz. Do not use for byte-stream parser fuzzing with libFuzzer
+  (use fuzz) or single-case golden expectation updates.
 ---
 
 # AST-Combinatorial `source_gen` Generator Fuzzing (`source-gen-fuzz`)
 
-Unlike byte-stream parsers, a `package:source_gen` `GeneratorForAnnotation<T>`
-(such as `json_serializable`, `freezed`, or custom annotation generators) takes
-**valid, resolved Dart declarations** (`ClassElement`, `FieldElement`,
-`DartType`, `ConstantReader`) and emits Dart source code (`.g.dart`).
+Unlike byte-stream parsers, a `package:source_gen` `Generator` or
+`GeneratorForAnnotation<T>` (such as `json_serializable`, `built_value`,
+`freezed`, or custom annotation generators) takes **valid, resolved Dart
+declarations** (`ClassElement`, `FieldElement`, `DartType`, `ConstantReader`)
+and emits Dart source code (`.g.dart`).
 
-To uncover deep interaction bugs in a `GeneratorForAnnotation<T>`, permute the
-**AST declaration axes that flip control-flow branches inside the generator**
-and validate every permutation with `verifyGeneratorBatch<T>` from
+To uncover deep interaction bugs in a `Generator`, permute the **AST declaration
+axes that flip control-flow branches inside the generator** and validate every
+permutation with `verifyGeneratorBatch` from
 `package:source_gen_test/source_gen_test.dart` in a single shared
 `AnalysisContextCollection` and a single batched `Isolate.spawnUri` call.
 
@@ -58,8 +59,8 @@ const CodegenCase({
 
 List<Map<K, V>> cartesianProduct<K, V>(Map<K, List<V>> axes);
 
-Future<CodegenBatchReport> verifyGeneratorBatch<T>({
-  required GeneratorForAnnotation<T> generator,
+Future<CodegenBatchReport> verifyGeneratorBatch({
+  required Generator generator,
   required List<CodegenCase> cases,
   List<String> imports = const [],
   String preamble = '',
@@ -74,7 +75,7 @@ Future<CodegenBatchReport> verifyGeneratorBatch<T>({
 String formatCodegenBatchReport(CodegenBatchReport report);
 ```
 
-## Workflow: How to Fuzz a `GeneratorForAnnotation<T>`
+## Workflow: How to Fuzz a `Generator`
 
 ### Phase 1: Map the Generator's AST Branch Axes
 
@@ -106,7 +107,7 @@ branches on the input `Element`, `DartType`, or annotation `ConstantReader`:
 ### Phase 2: Build the Combinatorial Matrix with `cartesianProduct`
 
 Use `cartesianProduct` to expand orthogonal axes into `CodegenCase` entries.
-Group `100-500` cases per `verifyGeneratorBatch<T>` call so the Dart SDK and
+Group `100-500` cases per `verifyGeneratorBatch` call so the Dart SDK and
 package dependencies resolve once per batch (~1-2 seconds):
 
 ```dart
@@ -150,7 +151,7 @@ final decoded = $className.fromJson(encoded);
     );
   }
 
-  final report = await verifyGeneratorBatch<JsonSerializable>(
+  final report = await verifyGeneratorBatch(
     generator: JsonSerializableGenerator(),
     packageRoot: '.',
     imports: const [
@@ -182,9 +183,10 @@ Object? sharedToJson(int v) => v;
 >   separate entrypoint library (`fuzz_batch_main.dart`) that imports
 >   `fuzz_batch.dart`. Any shared helper type or function in `preamble:` that is
 >   referenced inside `runtimeCheck` must be public (not `_`-prefixed).
-> - **One target `elementName` is generated per `CodegenCase`**:
->   `generateForElement<T>` runs once per `CodegenCase` on its target
->   `elementName` (and automatically deduplicates shared top-level helpers like
+> - **One target `elementName` is generated per `CodegenCase` for
+>   `GeneratorForAnnotation`**: The generator runs once per `CodegenCase` on its
+>   target `elementName` (or across the per-case library for plain `Generator`
+>   implementations, automatically deduplicating shared top-level helpers like
 >   `const _$SharedStatusEnumMap` across cases in `fuzz_batch.g.dart`). If a
 >   case references a helper class in `preamble:` or `declarations` that is not
 >   the case's target `elementName`, give that helper class manual
@@ -198,17 +200,18 @@ Object? sharedToJson(int v) => v;
 
 ### Phase 3: Understand the Three Built-In Oracles
 
-`verifyGeneratorBatch<T>` automatically runs all three verification stages and
+`verifyGeneratorBatch` automatically runs all three verification stages and
 isolates failures per case without aborting the rest of the batch:
 
-1. **Oracle 1 -- Per-Element Diagnostic & Crash Isolation (`generatorException`
-   / `unexpectedSuccess`)**:
-   - Resolves the combined library once in `AnalysisContextCollection`, wraps it
-     in a `LibraryReader`, and invokes `generateForElement<T>` individually for
-     each `CodegenCase` inside its own `try` / `catch`.
-   - Any positive case that crashes in `generateForElement<T>` is caught in
-     `O(1)` directly on that element and recorded with its exact stack trace,
-     while all surviving cases keep their exact per-element generated snippet.
+1. **Oracle 1 -- Per-Case Diagnostic & Crash Isolation (`generatorException` /
+   `unexpectedSuccess`)**:
+   - Resolves the library in `AnalysisContextCollection` (with
+     `part 'fuzz_batch.g.dart';` included), wraps it in a `LibraryReader`, and
+     invokes the generator individually for each `CodegenCase` inside its own
+     `try` / `catch`.
+   - Any positive case that crashes in the generator is caught in `O(1)`
+     directly on that case and recorded with its exact stack trace, while all
+     surviving cases keep their exact per-case generated snippet.
    - Negative cases (`expectedError: ...`) assert that the generator rejects
      invalid declarations with a matching error message rather than crashing or
      silently emitting broken code.
@@ -217,18 +220,20 @@ isolates failures per case without aborting the rest of the batch:
    - Wraps each surviving case in `// === CASE:<id> ===` ...
      `// === END:<id> ===` inside **both** `fuzz_batch.dart` and
      `fuzz_batch.g.dart` (with `// ignore_for_file: type=lint`, deduplicating
-     identical top-level helper declarations across cases) and checks
-     `AnalysisSession.getErrors` for both `Severity.error` and
-     `Severity.warning` (catching `invalid_null_aware_operator`,
-     `unnecessary_cast`, `dead_null_aware_expression`, invalid type bounds, and
-     leaked private typedefs).
+     identical top-level helper declarations across cases while preserving
+     `// ignore:` comments) and checks `AnalysisSession.getErrors` for both
+     `Severity.error` and `Severity.warning` (catching
+     `invalid_null_aware_operator`, `unnecessary_cast`,
+     `dead_null_aware_expression`, invalid type bounds, and leaked private
+     typedefs).
    - Statically non-compilable cases map back to their exact `CodegenCase.id`
      and `generatedCode` via marker offsets and are automatically stripped
      (without re-invoking the generator) before launching the runtime isolate.
 3. **Oracle 3 -- Batched Runtime Round-Trip (`runtimeFailure` via
    `Isolate.spawnUri`)**:
-   - Wraps every surviving `CodegenCase.runtimeCheck` in an isolated `try` /
-     `catch` inside a single `Isolate.spawnUri` script and verifies
+   - Wraps every surviving `CodegenCase.runtimeCheck` in an isolated
+     `runZonedGuarded` + `try` / `catch` inside a single `Isolate.spawnUri`
+     script, streaming per-case completion events and verifying
      `fromJson(toJson())` round-trip equivalence at runtime.
 
 > [!NOTE]
