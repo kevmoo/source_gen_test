@@ -7,8 +7,10 @@ import 'package:analyzer/dart/analysis/analysis_context.dart';
 import 'package:analyzer/dart/analysis/analysis_context_collection.dart';
 import 'package:analyzer/dart/analysis/results.dart';
 import 'package:analyzer/dart/analysis/utilities.dart';
+import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/diagnostic/diagnostic.dart';
+import 'package:build/build.dart';
 import 'package:cli_util/cli_util.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_gen/source_gen.dart';
@@ -134,8 +136,8 @@ List<Map<K, V>> _expandAxis<K, V>(
 ///
 /// Throws a [StateError] detailing all discovered issues when [failOnIssues] is
 /// `true` and at least one issue is found.
-Future<CodegenBatchReport> verifyGeneratorBatch<T>({
-  required GeneratorForAnnotation<T> generator,
+Future<CodegenBatchReport> verifyGeneratorBatch({
+  required Generator generator,
   required List<CodegenCase> cases,
   List<String> imports = const [],
   String preamble = '',
@@ -174,33 +176,8 @@ Future<CodegenBatchReport> verifyGeneratorBatch<T>({
       isolateTimeout: isolateTimeout,
     );
 
-    final genStep = await _runPerElementGeneration<T>(env, generator, cases);
-    final issues = <CodegenIssue>[...genStep.issues];
-
-    if (genStep.survivors.isNotEmpty) {
-      final staticStep = await _verifyStaticDiagnostics(
-        env,
-        genStep.survivors,
-        genStep.generatedByCaseId,
-      );
-      _appendUniqueIssues(issues, staticStep.issues);
-      if (staticStep.survivors.isNotEmpty) {
-        final runtimeIssues = await _runBatchedIsolateChecks(
-          env,
-          staticStep.survivors,
-          genStep.generatedByCaseId,
-        );
-        _appendUniqueIssues(issues, runtimeIssues);
-      }
-    }
-
-    final failedIds = {for (final issue in issues) issue.caseId};
-    final report = (
-      totalCases: cases.length,
-      passedCases: cases.length - failedIds.length,
-      issues: List<CodegenIssue>.unmodifiable(issues),
-    );
-    if (failOnIssues && issues.isNotEmpty) {
+    final report = await _executeBatchPipeline(env, generator, cases);
+    if (failOnIssues && report.issues.isNotEmpty) {
       throw StateError(formatCodegenBatchReport(report));
     }
     return report;
@@ -208,6 +185,66 @@ Future<CodegenBatchReport> verifyGeneratorBatch<T>({
     _cleanupWorkDir(tempWorkDir);
   }
 }
+
+Future<CodegenBatchReport> _executeBatchPipeline(
+  _BatchEnv env,
+  Generator generator,
+  List<CodegenCase> cases,
+) async {
+  final genStep = await _runPerElementGeneration(env, generator, cases);
+  final issues = <CodegenIssue>[...genStep.issues];
+  var staticSurvivors = const <CodegenCase>[];
+  var runtimePassedIds = const <String>{};
+
+  if (genStep.survivors.isNotEmpty) {
+    final staticStep = await _verifyStaticDiagnostics(
+      env,
+      genStep.survivors,
+      genStep.generatedByCaseId,
+    );
+    staticSurvivors = staticStep.survivors;
+    _appendUniqueIssues(issues, staticStep.issues);
+    if (staticSurvivors.isNotEmpty) {
+      final runtimeStep = await _runBatchedIsolateChecks(
+        env,
+        staticSurvivors,
+        genStep.generatedByCaseId,
+      );
+      runtimePassedIds = runtimeStep.passedCaseIds;
+      _appendUniqueIssues(issues, runtimeStep.issues);
+    }
+  }
+
+  final verifiedIds = _collectVerifiedCaseIds(
+    passedNegativeIds: genStep.passedNegativeIds,
+    staticSurvivors: staticSurvivors,
+    runtimePassedIds: runtimePassedIds,
+    issues: issues,
+  );
+  return (
+    totalCases: cases.length,
+    passedCases: verifiedIds.length,
+    issues: List<CodegenIssue>.unmodifiable(issues),
+  );
+}
+
+Set<String> _collectVerifiedCaseIds({
+  required Set<String> passedNegativeIds,
+  required List<CodegenCase> staticSurvivors,
+  required Set<String> runtimePassedIds,
+  required List<CodegenIssue> issues,
+}) {
+  final failedIds = {for (final issue in issues) issue.caseId};
+  return <String>{
+    ...passedNegativeIds,
+    for (final c in staticSurvivors)
+      if (!_hasRuntimeCheck(c)) c.id,
+    ...runtimePassedIds,
+  }..removeAll(failedIds);
+}
+
+bool _hasRuntimeCheck(CodegenCase c) =>
+    c.runtimeCheck != null && c.runtimeCheck!.trim().isNotEmpty;
 
 typedef _BatchEnv = ({
   AnalysisContext context,
@@ -297,19 +334,20 @@ void _writeAuxiliaryFiles(String workDir, Map<String, String> auxiliaryFiles) {
 
 typedef _GenerationBatchStep = ({
   List<CodegenCase> survivors,
+  Set<String> passedNegativeIds,
   Map<String, String> generatedByCaseId,
   List<CodegenIssue> issues,
 });
 
-Future<_GenerationBatchStep> _runPerElementGeneration<T>(
+Future<_GenerationBatchStep> _runPerElementGeneration(
   _BatchEnv env,
-  GeneratorForAnnotation<T> generator,
+  Generator generator,
   List<CodegenCase> cases,
 ) async {
   final initialSource = _buildLibrarySource(
     env: env,
     cases: cases,
-    includePartDirective: false,
+    includePartDirective: true,
   );
   final library = await _resolveLibraryAtPath(
     env.context,
@@ -318,32 +356,63 @@ Future<_GenerationBatchStep> _runPerElementGeneration<T>(
   );
   final sharedReader = LibraryReader(library);
   final survivors = <CodegenCase>[];
+  final passedNegativeIds = <String>{};
   final generatedByCaseId = <String, String>{};
   final issues = <CodegenIssue>[];
+  final isAnnotatedGen = generator is GeneratorForAnnotation<Object?>;
 
   for (final c in cases) {
-    final elementName = _resolveCaseElementName(c);
-    final reader = await _readerForCase(env, sharedReader, c, elementName);
-    final outcome = await _evaluateSingleCase<T>(
+    final elementName = isAnnotatedGen ? _resolveCaseElementName(c) : null;
+    final reader = await _readerForCase(
+      env,
+      sharedReader,
+      c,
+      elementName,
+      isSingleCaseBatch: cases.length == 1,
+    );
+    final outcome = await _evaluateSingleCase(
       generator,
       reader,
       c,
       elementName,
     );
-    if (outcome.issue != null) {
-      issues.add(outcome.issue!);
-    } else if (c.expectedError == null) {
-      survivors.add(c);
-      if (outcome.generatedCode != null) {
-        generatedByCaseId[c.id] = outcome.generatedCode!;
-      }
-    }
+    _recordCaseGenerationOutcome(
+      c: c,
+      outcome: outcome,
+      survivors: survivors,
+      passedNegativeIds: passedNegativeIds,
+      generatedByCaseId: generatedByCaseId,
+      issues: issues,
+    );
   }
   return (
     survivors: survivors,
+    passedNegativeIds: passedNegativeIds,
     generatedByCaseId: generatedByCaseId,
     issues: issues,
   );
+}
+
+void _recordCaseGenerationOutcome({
+  required CodegenCase c,
+  required _CaseGenOutcome outcome,
+  required List<CodegenCase> survivors,
+  required Set<String> passedNegativeIds,
+  required Map<String, String> generatedByCaseId,
+  required List<CodegenIssue> issues,
+}) {
+  if (outcome.issue != null) {
+    issues.add(outcome.issue!);
+    return;
+  }
+  if (c.expectedError != null) {
+    passedNegativeIds.add(c.id);
+    return;
+  }
+  survivors.add(c);
+  if (outcome.generatedCode != null) {
+    generatedByCaseId[c.id] = outcome.generatedCode!;
+  }
 }
 
 String _resolveCaseElementName(CodegenCase c) {
@@ -363,16 +432,16 @@ Future<LibraryReader> _readerForCase(
   _BatchEnv env,
   LibraryReader sharedReader,
   CodegenCase c,
-  String elementName,
-) async {
-  final matchCount = sharedReader.allElements
-      .where((e) => e.name == elementName)
-      .length;
-  if (matchCount == 1) return sharedReader;
+  String? elementName, {
+  required bool isSingleCaseBatch,
+}) async {
+  if (_canReuseSharedReader(sharedReader, elementName, isSingleCaseBatch)) {
+    return sharedReader;
+  }
   final singleSource = _buildLibrarySource(
     env: env,
     cases: [c],
-    includePartDirective: false,
+    includePartDirective: true,
   );
   final lib = await _resolveLibraryAtPath(
     env.context,
@@ -382,16 +451,28 @@ Future<LibraryReader> _readerForCase(
   return LibraryReader(lib);
 }
 
+bool _canReuseSharedReader(
+  LibraryReader sharedReader,
+  String? elementName,
+  bool isSingleCaseBatch,
+) {
+  if (elementName == null) return isSingleCaseBatch;
+  final matchCount = sharedReader.allElements
+      .where((e) => e.name == elementName)
+      .length;
+  return matchCount == 1;
+}
+
 typedef _CaseGenOutcome = ({String? generatedCode, CodegenIssue? issue});
 
-Future<_CaseGenOutcome> _evaluateSingleCase<T>(
-  GeneratorForAnnotation<T> generator,
+Future<_CaseGenOutcome> _evaluateSingleCase(
+  Generator generator,
   LibraryReader reader,
   CodegenCase c,
-  String elementName,
+  String? elementName,
 ) async {
   try {
-    final raw = await generateForElement<T>(generator, reader, elementName);
+    final raw = await _invokeCaseGenerator(generator, reader, elementName);
     final trimmed = raw.trim();
     final code = trimmed.isEmpty ? null : trimmed;
     if (c.expectedError != null) {
@@ -430,6 +511,92 @@ Future<_CaseGenOutcome> _evaluateSingleCase<T>(
   }
 }
 
+Future<String> _invokeCaseGenerator(
+  Generator generator,
+  LibraryReader reader,
+  String? elementName,
+) async {
+  final Object? rawOutput;
+  if (generator is GeneratorForAnnotation<Object?>) {
+    final element = _lookupCaseElement(reader, elementName!);
+    final annotation = _resolveElementAnnotation(generator, element);
+    rawOutput = await generator.generateForAnnotatedElement(
+      element,
+      ConstantReader(annotation),
+      _BatchBuildStep(),
+    );
+  } else {
+    rawOutput = await generator.generate(reader, _BatchBuildStep());
+  }
+  return _normalizeGeneratorOutput(rawOutput).join('\n\n');
+}
+
+Element _lookupCaseElement(LibraryReader reader, String name) {
+  final elements = reader.allElements.where((e) => e.name == name).toList();
+  if (elements.isEmpty) {
+    throw ArgumentError.value(
+      name,
+      'name',
+      'Could not find an element with name `$name`.',
+    );
+  }
+  if (elements.length == 1) return elements.first;
+  final rootProperties = elements.whereType<PropertyInducingElement>().toList();
+  if (rootProperties.length == 1) return rootProperties.first;
+  throw UnimplementedError();
+}
+
+DartObject? _resolveElementAnnotation(
+  GeneratorForAnnotation<Object?> generator,
+  Element element,
+) {
+  final direct = generator.typeChecker.firstAnnotationOf(
+    element,
+    throwOnUnresolved: generator.throwOnUnresolved,
+  );
+  if (direct != null) return direct;
+  final checkerName = generator.typeChecker.toString().split(' ').first;
+  for (final meta in element.metadata.annotations) {
+    final obj = meta.computeConstantValue();
+    if (obj?.type?.element?.name == checkerName) {
+      return obj;
+    }
+  }
+  return null;
+}
+
+Stream<String> _normalizeGeneratorOutput(Object? value) async* {
+  final resolved = value is Future<Object?> ? await value : value;
+  if (resolved == null) return;
+  if (resolved is String) {
+    final trimmed = resolved.trim();
+    if (trimmed.isNotEmpty) yield trimmed;
+    return;
+  }
+  yield* _normalizeGeneratorCollection(resolved);
+}
+
+Stream<String> _normalizeGeneratorCollection(Object value) async* {
+  if (value is Iterable<Object?>) {
+    for (final item in value) {
+      yield* _normalizeGeneratorOutput(item);
+    }
+    return;
+  }
+  if (value is Stream<Object?>) {
+    await for (final item in value) {
+      yield* _normalizeGeneratorOutput(item);
+    }
+    return;
+  }
+  throw ArgumentError('Unexpected generator output: $value');
+}
+
+class _BatchBuildStep extends BuildStep {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => super.noSuchMethod(invocation);
+}
+
 bool _matchesPattern(String text, Pattern pattern) => switch (pattern) {
   final RegExp re => re.hasMatch(text),
   final String s => text.contains(s),
@@ -455,6 +622,16 @@ Future<_StaticVerifyResult> _verifyStaticDiagnostics(
       return (survivors: step.survivors, issues: issues);
     }
     current = step.survivors;
+  }
+  if (current.isNotEmpty) {
+    _appendUniqueIssues(issues, [
+      _buildPreambleMessageIssue(
+        env.preamble,
+        'Static analysis retry cap (5 passes) exhausted with '
+        '${current.length} unverified case(s): '
+        '${current.map((c) => c.id).join(', ')}.',
+      ),
+    ]);
   }
   return (survivors: const <CodegenCase>[], issues: issues);
 }
@@ -498,6 +675,7 @@ Future<_StaticPassStep> _runSingleStaticPass(
   final attribution = _attributeBatchAndPartDiagnostics(
     survivors: survivors,
     generatedByCaseId: generatedByCaseId,
+    preamble: env.preamble,
     batchFile: (
       fileLabel: 'fuzz_batch.dart',
       source: batchSource,
@@ -509,20 +687,38 @@ Future<_StaticPassStep> _runSingleStaticPass(
       diagnostics: partDiag,
     ),
   );
-  if (attribution.errorCaseIds.isEmpty &&
-      !attribution.hasUnattributedHardError) {
-    return (survivors: survivors, issues: attribution.issues, done: true);
-  }
+  return _resolveNextStaticPassStep(survivors, attribution);
+}
 
+_StaticPassStep _resolveNextStaticPassStep(
+  List<CodegenCase> survivors,
+  _StaticAttributionResult attribution,
+) {
+  if (attribution.errorCaseIds.isEmpty) {
+    final allIssues = [
+      ...attribution.issues,
+      ...attribution.unattributedIssues,
+    ];
+    return (
+      survivors: attribution.hasUnattributedHardError
+          ? const <CodegenCase>[]
+          : survivors,
+      issues: allIssues,
+      done: true,
+    );
+  }
   final cleanSurvivors = [
     for (final c in survivors)
       if (!attribution.errorCaseIds.contains(c.id)) c,
   ];
   final cannotProgress =
       cleanSurvivors.isEmpty || cleanSurvivors.length == survivors.length;
+  final issues = cannotProgress
+      ? [...attribution.issues, ...attribution.unattributedIssues]
+      : attribution.issues;
   return (
     survivors: cannotProgress ? const <CodegenCase>[] : cleanSurvivors,
-    issues: attribution.issues,
+    issues: issues,
     done: cannotProgress,
   );
 }
@@ -551,6 +747,7 @@ typedef _MarkedFileDiagnostics = ({
 
 typedef _StaticAttributionResult = ({
   List<CodegenIssue> issues,
+  List<CodegenIssue> unattributedIssues,
   Set<String> errorCaseIds,
   bool hasUnattributedHardError,
 });
@@ -558,6 +755,7 @@ typedef _StaticAttributionResult = ({
 _StaticAttributionResult _attributeBatchAndPartDiagnostics({
   required List<CodegenCase> survivors,
   required Map<String, String> generatedByCaseId,
+  required String preamble,
   required _MarkedFileDiagnostics batchFile,
   required _MarkedFileDiagnostics partFile,
 }) {
@@ -568,57 +766,25 @@ _StaticAttributionResult _attributeBatchAndPartDiagnostics({
     caseMap: caseMap,
     symbolMap: symbolMap,
     generatedByCaseId: generatedByCaseId,
+    preamble: preamble,
   );
   final partAttr = _attributeMarkedDiagnostics(
     fileDiag: partFile,
     caseMap: caseMap,
     symbolMap: symbolMap,
     generatedByCaseId: generatedByCaseId,
+    preamble: preamble,
   );
-  final foundIssues = [...batchAttr.issues, ...partAttr.issues];
-  final errorCaseIds = {...batchAttr.errorCaseIds, ...partAttr.errorCaseIds};
-  final hasUnattributedHardError =
-      batchAttr.hasUnattributedHardError || partAttr.hasUnattributedHardError;
-
-  if (hasUnattributedHardError &&
-      errorCaseIds.isEmpty &&
-      survivors.isNotEmpty) {
-    final fallbackCase = survivors.first;
-    errorCaseIds.add(fallbackCase.id);
-    _appendFallbackErrors(
-      foundIssues,
-      fallbackCase,
-      batchFile,
-      generatedByCaseId[fallbackCase.id],
-    );
-    _appendFallbackErrors(
-      foundIssues,
-      fallbackCase,
-      partFile,
-      generatedByCaseId[fallbackCase.id],
-    );
-  }
-
   return (
-    issues: foundIssues,
-    errorCaseIds: errorCaseIds,
-    hasUnattributedHardError: hasUnattributedHardError,
+    issues: [...batchAttr.issues, ...partAttr.issues],
+    unattributedIssues: [
+      ...batchAttr.unattributedIssues,
+      ...partAttr.unattributedIssues,
+    ],
+    errorCaseIds: {...batchAttr.errorCaseIds, ...partAttr.errorCaseIds},
+    hasUnattributedHardError:
+        batchAttr.hasUnattributedHardError || partAttr.hasUnattributedHardError,
   );
-}
-
-void _appendFallbackErrors(
-  List<CodegenIssue> target,
-  CodegenCase fallbackCase,
-  _MarkedFileDiagnostics fileDiag,
-  String? generatedCode,
-) {
-  for (final d in fileDiag.diagnostics) {
-    if (d.severity == Severity.error) {
-      target.add(
-        _buildStaticIssue(fallbackCase, d, fileDiag.fileLabel, generatedCode),
-      );
-    }
-  }
 }
 
 _StaticAttributionResult _attributeMarkedDiagnostics({
@@ -626,14 +792,14 @@ _StaticAttributionResult _attributeMarkedDiagnostics({
   required Map<String, CodegenCase> caseMap,
   required Map<String, String> symbolMap,
   required Map<String, String> generatedByCaseId,
+  required String preamble,
 }) {
   final foundIssues = <CodegenIssue>[];
+  final unattributedIssues = <CodegenIssue>[];
   final errorCaseIds = <String>{};
   var hasUnattributedHardError = false;
   for (final d in fileDiag.diagnostics) {
-    final caseId =
-        _attributeOffsetInMarkedSource(fileDiag.source, d.offset) ??
-        _attributeDiagnosticBySymbol(d.message, symbolMap);
+    final caseId = _attributeSingleDiagnostic(fileDiag, d, symbolMap);
     final matched = caseId != null ? caseMap[caseId] : null;
     if (matched != null) {
       foundIssues.add(
@@ -645,15 +811,34 @@ _StaticAttributionResult _attributeMarkedDiagnostics({
         ),
       );
       if (d.severity == Severity.error) errorCaseIds.add(matched.id);
-    } else if (d.severity == Severity.error) {
-      hasUnattributedHardError = true;
+    } else {
+      unattributedIssues.add(
+        _buildPreambleDiagnosticIssue(preamble, d, fileDiag.fileLabel),
+      );
+      if (d.severity == Severity.error) {
+        hasUnattributedHardError = true;
+      }
     }
   }
   return (
     issues: foundIssues,
+    unattributedIssues: unattributedIssues,
     errorCaseIds: errorCaseIds,
     hasUnattributedHardError: hasUnattributedHardError,
   );
+}
+
+String? _attributeSingleDiagnostic(
+  _MarkedFileDiagnostics fileDiag,
+  Diagnostic d,
+  Map<String, String> symbolMap,
+) {
+  if (fileDiag.source.isNotEmpty &&
+      d.offset >= 0 &&
+      d.offset <= fileDiag.source.length) {
+    return _attributeOffsetInMarkedSource(fileDiag.source, d.offset);
+  }
+  return _attributeDiagnosticBySymbol(d.message, symbolMap);
 }
 
 CodegenIssue _buildStaticIssue(
@@ -669,6 +854,23 @@ CodegenIssue _buildStaticIssue(
       '${d.message}',
   declarations: c.declarations,
   generatedCode: generatedCode,
+);
+
+CodegenIssue _buildPreambleDiagnosticIssue(
+  String preamble,
+  Diagnostic d,
+  String fileLabel,
+) => _buildPreambleMessageIssue(
+  preamble,
+  '[$fileLabel:${d.diagnosticCode.name.toLowerCase()}] ${d.message}',
+);
+
+CodegenIssue _buildPreambleMessageIssue(String preamble, String message) => (
+  caseId: 'preamble',
+  kind: CodegenIssueKind.staticError,
+  message: message,
+  declarations: preamble,
+  generatedCode: null,
 );
 
 void _appendUniqueIssues(
@@ -702,6 +904,7 @@ Future<List<Diagnostic>> _collectRelevantDiagnostics(
 const Set<String> _ignoredWarningCodes = {
   'unused_element',
   'unused_field',
+  'unused_import',
   'unused_local_variable',
 };
 
@@ -726,25 +929,64 @@ Map<String, String> _buildSymbolToCaseIdMap(List<CodegenCase> cases) {
   return map;
 }
 
-final RegExp _topLevelDeclNameRe = RegExp(
-  r'\b(?:class|enum|mixin(?!\s+class\b)|typedef|extension\s+type)\s+([A-Za-z_$][A-Za-z0-9_$]*)',
+final RegExp _typeLikeDeclHeaderRe = RegExp(
+  r'^(?:(?:augment|abstract|sealed|base|interface|final|inline|mixin)\s+)*'
+  r'(?:class|enum|mixin|extension(?:\s+type(?:\s+const)?)?)\s+'
+  r'(?!on\b)([A-Za-z_$][A-Za-z0-9_$]*)',
 );
 
-List<String> _extractDeclaredSymbols(String declarations) => [
-  for (final m in _topLevelDeclNameRe.allMatches(declarations)) m.group(1)!,
-];
+final RegExp _typedefDeclHeaderRe = RegExp(
+  r'^(?:augment\s+)?typedef\s+'
+  r'(?:[A-Za-z_$][A-Za-z0-9_$<>?,\s.]*\s+)?'
+  r'([A-Za-z_$][A-Za-z0-9_$]*)\s*(?:<[^>]*>)?\s*(?:=|\()',
+);
 
-final RegExp _caseStartMarkerRe = RegExp(
-  r'^// === CASE:(.+?) ===$',
+final RegExp _executableOrVarDeclHeaderRe = RegExp(
+  r'^(?:(?:augment|external|const|final|late|var|get|set)\s+)*'
+  r'(?:[A-Za-z_$][A-Za-z0-9_$<>?,\s.]*\s+)?'
+  r'([A-Za-z_$][A-Za-z0-9_$]*)\s*(?:<[^>]*>)?\s*(?:\(|=|;|=>|\{)',
+);
+
+List<String> _extractDeclaredSymbols(String declarations) {
+  final unit = parseString(
+    content: declarations,
+    throwIfDiagnostics: false,
+  ).unit;
+  final symbols = <String>[];
+  for (final decl in unit.declarations) {
+    final start = decl.firstTokenAfterCommentAndMetadata.offset;
+    if (start < 0 || start >= declarations.length) continue;
+    final header = declarations.substring(start, decl.end);
+    final match =
+        _typeLikeDeclHeaderRe.firstMatch(header) ??
+        _typedefDeclHeaderRe.firstMatch(header) ??
+        _executableOrVarDeclHeaderRe.firstMatch(header);
+    if (match != null) {
+      symbols.add(match.group(1)!);
+    }
+  }
+  return symbols;
+}
+
+final RegExp _caseMarkerRe = RegExp(
+  r'^// === (CASE|END):(.+?) ===$',
   multiLine: true,
 );
 
 String? _attributeOffsetInMarkedSource(String source, int offset) {
-  final safeOffset = offset.clamp(0, source.length);
-  final prefix = source.substring(0, safeOffset);
-  final matches = _caseStartMarkerRe.allMatches(prefix);
-  if (matches.isEmpty) return null;
-  return matches.last.group(1);
+  if (offset < 0 || offset > source.length) return null;
+  String? activeCaseId;
+  for (final match in _caseMarkerRe.allMatches(source)) {
+    if (match.start > offset) break;
+    final kind = match.group(1);
+    final id = match.group(2)!;
+    if (kind == 'CASE') {
+      activeCaseId = id;
+    } else if (activeCaseId == id) {
+      activeCaseId = null;
+    }
+  }
+  return activeCaseId;
 }
 
 String? _attributeDiagnosticBySymbol(
@@ -754,7 +996,7 @@ String? _attributeDiagnosticBySymbol(
   String? bestCaseId;
   var bestLen = 0;
   for (final MapEntry(:key, :value) in symbolMap.entries) {
-    if (key.length > bestLen && text.contains(key)) {
+    if (key.length > bestLen && _containsWholeIdentifier(text, key)) {
       bestLen = key.length;
       bestCaseId = value;
     }
@@ -762,16 +1004,29 @@ String? _attributeDiagnosticBySymbol(
   return bestCaseId;
 }
 
-Future<List<CodegenIssue>> _runBatchedIsolateChecks(
+bool _containsWholeIdentifier(String text, String identifier) {
+  if (identifier.isEmpty) return false;
+  final escaped = RegExp.escape(identifier);
+  return RegExp('(?<![A-Za-z0-9_\$])$escaped(?![A-Za-z0-9_\$])').hasMatch(text);
+}
+
+typedef _RuntimeBatchStep = ({
+  Set<String> passedCaseIds,
+  List<CodegenIssue> issues,
+});
+
+Future<_RuntimeBatchStep> _runBatchedIsolateChecks(
   _BatchEnv env,
   List<CodegenCase> survivors,
   Map<String, String> generatedByCaseId,
 ) async {
   final initialRunnable = [
     for (final c in survivors)
-      if (c.runtimeCheck != null && c.runtimeCheck!.trim().isNotEmpty) c,
+      if (_hasRuntimeCheck(c)) c,
   ];
-  if (initialRunnable.isEmpty) return const [];
+  if (initialRunnable.isEmpty) {
+    return (passedCaseIds: const <String>{}, issues: const <CodegenIssue>[]);
+  }
 
   final mainPath = p.join(env.workDir, 'fuzz_batch_main.dart');
   final filterStep = await _filterCompilableRuntimeChecks(
@@ -781,18 +1036,19 @@ Future<List<CodegenIssue>> _runBatchedIsolateChecks(
     generatedByCaseId: generatedByCaseId,
   );
   final issues = <CodegenIssue>[...filterStep.issues];
-  if (filterStep.runnable.isEmpty) return issues;
+  if (filterStep.runnable.isEmpty) {
+    return (passedCaseIds: const <String>{}, issues: issues);
+  }
 
-  final failures = await _executeIsolateRunner(
+  final runResult = await _executeIsolateRunner(
     mainUri: p.toUri(mainPath),
     packageConfigUri: env.packageConfigUri,
+    runnableIds: [for (final c in filterStep.runnable) c.id],
     timeout: env.isolateTimeout,
   );
   final caseMap = {for (final c in filterStep.runnable) c.id: c};
-  for (final failure in failures) {
-    final c = failure['id'] == '*'
-        ? filterStep.runnable.first
-        : caseMap[failure['id']!];
+  for (final failure in runResult.failures) {
+    final c = caseMap[failure['id']!];
     if (c == null) continue;
     issues.add((
       caseId: c.id,
@@ -802,7 +1058,7 @@ Future<List<CodegenIssue>> _runBatchedIsolateChecks(
       generatedCode: generatedByCaseId[c.id],
     ));
   }
-  return issues;
+  return (passedCaseIds: runResult.passedIds, issues: issues);
 }
 
 typedef _RuntimeFilterStep = ({
@@ -811,6 +1067,40 @@ typedef _RuntimeFilterStep = ({
 });
 
 Future<_RuntimeFilterStep> _filterCompilableRuntimeChecks({
+  required _BatchEnv env,
+  required String mainPath,
+  required List<CodegenCase> runnable,
+  required Map<String, String> generatedByCaseId,
+}) async {
+  var current = runnable;
+  final issues = <CodegenIssue>[];
+  for (var pass = 0; pass < 5 && current.isNotEmpty; pass++) {
+    final step = await _runSingleRuntimeFilterPass(
+      env: env,
+      mainPath: mainPath,
+      runnable: current,
+      generatedByCaseId: generatedByCaseId,
+    );
+    _appendUniqueIssues(issues, step.issues);
+    if (step.done) {
+      return (runnable: step.survivors, issues: issues);
+    }
+    current = step.survivors;
+  }
+  if (current.isNotEmpty) {
+    _appendUniqueIssues(issues, [
+      _buildPreambleMessageIssue(
+        env.preamble,
+        'Runtime harness static check retry cap (5 passes) exhausted with '
+        '${current.length} unverified case(s): '
+        '${current.map((c) => c.id).join(', ')}.',
+      ),
+    ]);
+  }
+  return (runnable: const <CodegenCase>[], issues: issues);
+}
+
+Future<_StaticPassStep> _runSingleRuntimeFilterPass({
   required _BatchEnv env,
   required String mainPath,
   required List<CodegenCase> runnable,
@@ -829,7 +1119,7 @@ Future<_RuntimeFilterStep> _filterCompilableRuntimeChecks({
     includeWarnings: false,
   );
   if (mainDiag.isEmpty) {
-    return (runnable: runnable, issues: const <CodegenIssue>[]);
+    return (survivors: runnable, issues: const <CodegenIssue>[], done: true);
   }
 
   final mainFile = (
@@ -842,72 +1132,120 @@ Future<_RuntimeFilterStep> _filterCompilableRuntimeChecks({
     caseMap: {for (final c in runnable) c.id: c},
     symbolMap: _buildSymbolToCaseIdMap(runnable),
     generatedByCaseId: generatedByCaseId,
+    preamble: env.preamble,
   );
-  if (attr.hasUnattributedHardError && attr.errorCaseIds.isEmpty) {
-    final fallbackIssues = [...attr.issues];
-    if (runnable.isNotEmpty) {
-      final first = runnable.first;
-      _appendFallbackErrors(
-        fallbackIssues,
-        first,
-        mainFile,
-        generatedByCaseId[first.id],
-      );
-    }
-    return (runnable: const <CodegenCase>[], issues: fallbackIssues);
-  }
-  final cleanRunnable = [
-    for (final c in runnable)
-      if (!attr.errorCaseIds.contains(c.id)) c,
-  ];
-  if (cleanRunnable.isNotEmpty) {
-    File(mainPath).writeAsStringSync(
-      _buildRuntimeRunnerSource(runnable: cleanRunnable, imports: env.imports),
-    );
-  }
-  return (runnable: cleanRunnable, issues: attr.issues);
+  return _resolveNextStaticPassStep(runnable, attr);
 }
 
-Future<List<Map<String, String>>> _executeIsolateRunner({
+typedef _IsolateRunOutcome = ({
+  Set<String> passedIds,
+  List<Map<String, String>> failures,
+});
+
+class _IsolateRunTracker {
+  final List<String> runnableIds;
+  final Set<String> completedIds = {};
+  final Set<String> passedIds = {};
+  final List<Map<String, String>> failures = [];
+  final Completer<void> done = Completer<void>();
+  String? activeCaseId;
+
+  _IsolateRunTracker(this.runnableIds);
+
+  void handleMessage(Object? message) {
+    if (message is! Map) return;
+    switch (message['type']) {
+      case 'done':
+        _completeDone();
+      case 'start':
+        activeCaseId = message['id'] as String?;
+      case 'pass':
+        final id = message['id'] as String?;
+        if (id != null) {
+          _markCompleted(id);
+          passedIds.add(id);
+        }
+      case 'fail':
+        final id = message['id'] as String?;
+        if (id != null) {
+          _markCompleted(id);
+          passedIds.remove(id);
+          failures.add({'id': id, 'error': message['error'] as String});
+        }
+    }
+  }
+
+  void _markCompleted(String? id) {
+    if (id == null) return;
+    completedIds.add(id);
+    if (activeCaseId == id) activeCaseId = null;
+  }
+
+  void _completeDone() {
+    if (!done.isCompleted) done.complete();
+  }
+
+  void handleCrash(Object? err) {
+    recordUnfinished(
+      activeError: 'Isolate crashed during runtime check: $err',
+      pendingError: 'Runtime check did not run because isolate crashed: $err',
+    );
+    _completeDone();
+  }
+
+  void recordUnfinished({
+    required String activeError,
+    required String pendingError,
+  }) {
+    for (final id in runnableIds) {
+      if (completedIds.add(id)) {
+        final msg = id == activeCaseId ? activeError : pendingError;
+        failures.add({'id': id, 'error': msg});
+      }
+    }
+  }
+}
+
+Future<_IsolateRunOutcome> _executeIsolateRunner({
   required Uri mainUri,
   required Uri packageConfigUri,
+  required List<String> runnableIds,
   required Duration timeout,
 }) async {
+  final tracker = _IsolateRunTracker(runnableIds);
   final receivePort = ReceivePort();
   final errorPort = ReceivePort();
-  final completer = Completer<List<Map<String, String>>>();
-  final sub = receivePort.listen((Object? message) {
-    if (message is List && !completer.isCompleted) {
-      completer.complete([
-        for (final item in message.cast<Map<Object?, Object?>>())
-          {'id': item['id'] as String, 'error': item['error'] as String},
-      ]);
-    }
-  });
-  final errSub = errorPort.listen((Object? err) {
-    if (!completer.isCompleted) {
-      completer.completeError(StateError('Isolate crashed: $err'));
-    }
-  });
+  final sub = receivePort.listen(tracker.handleMessage);
+  final errSub = errorPort.listen(tracker.handleCrash);
+  Isolate? isolate;
   try {
-    await Isolate.spawnUri(
+    isolate = await Isolate.spawnUri(
       mainUri,
       const <String>[],
       receivePort.sendPort,
       packageConfig: packageConfigUri,
       onError: errorPort.sendPort,
     );
-    return await completer.future.timeout(timeout);
+    await tracker.done.future.timeout(timeout);
+  } on TimeoutException {
+    tracker.recordUnfinished(
+      activeError: 'Runtime check timed out after $timeout.',
+      pendingError:
+          'Runtime check did not finish before isolate timeout ($timeout).',
+    );
   } on IsolateSpawnException catch (e) {
-    return [
-      {'id': '*', 'error': 'Isolate failed to spawn: $e'},
-    ];
+    tracker.recordUnfinished(
+      activeError: 'Isolate failed to spawn: $e',
+      pendingError: 'Isolate failed to spawn: $e',
+    );
   } finally {
+    isolate?.kill(priority: Isolate.immediate);
     await sub.cancel();
     await errSub.cancel();
     receivePort.close();
     errorPort.close();
   }
+  return (passedIds: tracker.passedIds, failures: tracker.failures);
 }
 
 String _buildRuntimeRunnerSource({
@@ -916,6 +1254,7 @@ String _buildRuntimeRunnerSource({
 }) {
   final buf = StringBuffer()
     ..writeln('// ignore_for_file: type=lint')
+    ..writeln("import 'dart:async';")
     ..writeln("import 'dart:isolate';")
     ..writeln("import 'fuzz_batch.dart';");
   for (final imp in imports) {
@@ -928,31 +1267,67 @@ String _buildRuntimeRunnerSource({
     final c = runnable[i];
     buf
       ..writeln('// === CASE:${c.id} ===')
-      ..writeln('Future<void> _runCase$i() async {')
+      ..writeln('Future<void> _\$sgtRunCase$i() async {')
       ..writeln(c.runtimeCheck)
       ..writeln('}')
       ..writeln('// === END:${c.id} ===')
       ..writeln();
   }
   buf
+    ..writeln(_runtimeCaseExecutorHelper)
     ..writeln(
       'Future<void> main(List<String> args, SendPort replyPort) async {',
-    )
-    ..writeln('  final failures = <Map<String, String>>[];');
+    );
   for (var i = 0; i < runnable.length; i++) {
     final escapedId = jsonEncode(runnable[i].id);
-    buf
-      ..writeln('  try {')
-      ..writeln('    await _runCase$i();')
-      ..writeln('  } on Object catch (e, st) {')
-      ..writeln("    failures.add({'id': $escapedId, 'error': '\$e\\n\$st'});")
-      ..writeln('  }');
+    buf.writeln(
+      r'  await _$sgtExecuteRuntimeCase('
+      '$escapedId, _\$sgtRunCase$i, replyPort);',
+    );
   }
   buf
-    ..writeln('  replyPort.send(failures);')
+    ..writeln("  replyPort.send({'type': 'done'});")
     ..writeln('}');
   return buf.toString();
 }
+
+const String _runtimeCaseExecutorHelper = r'''
+Future<void> _$sgtExecuteRuntimeCase(
+  String id,
+  Future<void> Function() body,
+  SendPort replyPort,
+) async {
+  replyPort.send({'type': 'start', 'id': id});
+  final errors = <String>[];
+  final done = Completer<void>();
+  runZonedGuarded(
+    () async {
+      try {
+        await body();
+        await Future<void>.delayed(Duration.zero);
+      } on Object catch (e, st) {
+        errors.add('$e\n$st');
+      } finally {
+        if (!done.isCompleted) done.complete();
+      }
+    },
+    (Object e, StackTrace st) {
+      errors.add('$e\n$st');
+      if (!done.isCompleted) {
+        done.complete();
+      } else {
+        replyPort.send({'type': 'fail', 'id': id, 'error': '$e\n$st'});
+      }
+    },
+  );
+  await done.future;
+  if (errors.isEmpty) {
+    replyPort.send({'type': 'pass', 'id': id});
+  } else {
+    replyPort.send({'type': 'fail', 'id': id, 'error': errors.join('\n')});
+  }
+}
+''';
 
 String _buildLibrarySource({
   required _BatchEnv env,
@@ -1015,11 +1390,31 @@ String? _buildPartSource(
 List<String> _splitTopLevelDeclarations(String code) {
   final parsed = parseString(content: code, throwIfDiagnostics: false);
   final declarations = parsed.unit.declarations;
-  if (declarations.isEmpty) return [code];
-  return [
-    for (final decl in declarations)
-      code.substring(decl.offset, decl.end).trim(),
-  ];
+  if (parsed.errors.isNotEmpty || declarations.isEmpty) {
+    return [code.trim()];
+  }
+  final directives = parsed.unit.directives;
+  var start = directives.isEmpty ? 0 : directives.last.end;
+  final chunks = <String>[];
+  for (var i = 0; i < declarations.length; i++) {
+    final isLast = i == declarations.length - 1;
+    final end = isLast
+        ? code.length
+        : _declarationSplitEnd(
+            code,
+            declarations[i].end,
+            declarations[i + 1].offset,
+          );
+    final chunk = code.substring(start, end).trim();
+    if (chunk.isNotEmpty) chunks.add(chunk);
+    start = end;
+  }
+  return chunks;
+}
+
+int _declarationSplitEnd(String code, int declEnd, int nextDeclOffset) {
+  final nl = code.indexOf('\n', declEnd);
+  return (nl != -1 && nl < nextDeclOffset) ? nl + 1 : declEnd;
 }
 
 Future<LibraryElement> _resolveLibraryAtPath(
