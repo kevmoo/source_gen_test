@@ -1,4 +1,13 @@
 export 'annotations.dart' show ShouldGenerate, ShouldGenerateFile, ShouldThrow;
+export 'src/batch_soundness.dart'
+    show
+        CodegenBatchReport,
+        CodegenCase,
+        CodegenIssue,
+        CodegenIssueKind,
+        cartesianProduct,
+        formatCodegenBatchReport,
+        verifyGeneratorBatch;
 export 'src/build_log_tracking.dart'
     show buildLogItems, clearBuildLog, initializeBuildLogTracking;
 export 'src/generate_for_element.dart' show generateForElement;

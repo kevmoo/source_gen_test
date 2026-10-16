@@ -1,3 +1,10 @@
+## 1.4.0-wip
+
+- Add `verifyGeneratorBatch`, `cartesianProduct`, `formatCodegenBatchReport`,
+  `CodegenCase`, `CodegenIssue`, `CodegenIssueKind`, and `CodegenBatchReport`
+  for AST-combinatorial batch verification of `GeneratorForAnnotation`
+  generators.
+
 ## 1.3.8
 
 - Allow `build: '>=4.0.3 <6.0.0'`.
