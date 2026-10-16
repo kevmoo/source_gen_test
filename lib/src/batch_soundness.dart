@@ -15,24 +15,22 @@ import 'package:cli_util/cli_util.dart';
 import 'package:path/path.dart' as p;
 import 'package:source_gen/source_gen.dart';
 
-import 'generate_for_element.dart';
-
 /// Classification of failures caught by [verifyGeneratorBatch].
 enum CodegenIssueKind {
-  /// [generateForElement] threw an unexpected exception (or an exception that
-  /// did not match [CodegenCase.expectedError]).
+  /// The generator threw an unexpected exception (or an exception that did not
+  /// match [CodegenCase.expectedError]).
   generatorException,
 
-  /// [CodegenCase.expectedError] was specified, but [generateForElement]
-  /// succeeded without throwing.
+  /// [CodegenCase.expectedError] was specified, but the generator succeeded
+  /// without throwing.
   unexpectedSuccess,
 
   /// `package:analyzer` reported a compile-time error or warning on the
   /// input declarations or generated `.g.dart` part file.
   staticError,
 
-  /// The [CodegenCase.runtimeCheck] snippet threw during `Isolate.spawnUri`
-  /// round-trip execution.
+  /// The [CodegenCase.runtimeCheck] snippet threw or timed out during
+  /// `Isolate.spawnUri` round-trip execution.
   runtimeFailure,
 }
 
@@ -61,18 +59,18 @@ final class CodegenCase {
   final String declarations;
 
   /// Optional name of the annotated top-level element in [declarations] to
-  /// pass to [generateForElement].
+  /// target when running a [GeneratorForAnnotation].
   ///
-  /// When `null`, the first top-level `class`, `enum`, `mixin`, `typedef`, or
-  /// `extension type` name in [declarations] is extracted automatically.
+  /// When `null`, the first top-level declaration name in [declarations] is
+  /// extracted automatically.
   final String? elementName;
 
   /// Optional Dart statements executed inside an `async` block in the batched
   /// `Isolate.spawnUri` runtime oracle.
   final String? runtimeCheck;
 
-  /// When non-null, asserts that [generateForElement] throws an exception
-  /// whose string representation matches [expectedError].
+  /// When non-null, asserts that the generator throws an exception whose string
+  /// representation matches [expectedError].
   final Pattern? expectedError;
 
   const CodegenCase({
@@ -112,27 +110,30 @@ List<Map<K, V>> _expandAxis<K, V>(
     for (final v in values) {...prefix, key: v},
 ];
 
-/// Validates a batch of [cases] against [generator] using three oracles in a
-/// single shared `package:analyzer` context and a single batched
-/// `Isolate.spawnUri` execution:
+/// Validates a batch of [cases] against [generator] (supporting both
+/// [GeneratorForAnnotation] and library-level [Generator] implementations)
+/// using three oracles in a single shared `package:analyzer` context and a
+/// single batched `Isolate.spawnUri` execution:
 ///
-/// 1. **Per-Element Diagnostic & Generation Oracle**: Resolves the combined
-///    library once in `AnalysisContextCollection`, wraps it in a
-///    [LibraryReader], and calls [generateForElement] individually for each
-///    [CodegenCase] inside its own `try` / `catch`. Crashing positive cases and
-///    negative [CodegenCase.expectedError] contracts are verified in `O(1)` per
-///    element without binary-search bisection or regex snippet slicing.
+/// 1. **Per-Case Diagnostic & Generation Oracle**: Resolves the library in
+///    `AnalysisContextCollection` (with `part 'fuzz_batch.g.dart';` included)
+///    and invokes [generator] individually for each [CodegenCase] inside its
+///    own `try` / `catch`. Crashing positive cases and negative
+///    [CodegenCase.expectedError] contracts are verified in `O(1)` per case
+///    without binary-search bisection or regex snippet slicing.
 /// 2. **Static Soundness Oracle**: Assembles `fuzz_batch.dart` and
-///    `fuzz_batch.g.dart` with `// === CASE:<id> ===` markers around each
-///    surviving case (deduplicating identical shared top-level helper
-///    declarations across cases) and feeds both into
+///    `fuzz_batch.g.dart` with `// === CASE:<id> ===` and
+///    `// === END:<id> ===` markers around each surviving case (deduplicating
+///    identical shared top-level helper declarations across cases while
+///    preserving `// ignore:` comments) and feeds both into
 ///    `AnalysisSession.getErrors` to catch compile-time errors and (when
 ///    [includeWarnings] is `true`) static warnings such as
 ///    `invalid_null_aware_operator` or `unnecessary_cast`.
 /// 3. **Runtime Round-Trip Oracle**: Executes all surviving
 ///    [CodegenCase.runtimeCheck] blocks in a single `Isolate.spawnUri`
-///    invocation, isolating per-case exceptions so one failing case never masks
-///    the rest of the batch.
+///    invocation wrapped in `runZonedGuarded`, streaming per-case results and
+///    isolating exceptions or timeouts so one failing case never masks the rest
+///    of the batch.
 ///
 /// Throws a [StateError] detailing all discovered issues when [failOnIssues] is
 /// `true` and at least one issue is found.

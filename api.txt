@@ -1,0 +1,75 @@
+environment:
+  sdk: ^3.9.0
+package:source_gen_test/source_gen_test.dart:
+  buildLogItems (static getter: List<String>)
+  cartesianProduct (function: List<Map<K, V>> Function<K, V>(Map<K, List<V>>))
+  clearBuildLog (function: void Function())
+  formatCodegenBatchReport (function: String Function(({List<({String caseId, String declarations, String? generatedCode, CodegenIssueKind kind, String message})> issues, int passedCases, int totalCases})))
+  generateForElement (function: Future<String> Function<T>(GeneratorForAnnotation<T>, LibraryReader, String))
+  initializeBuildLogTracking (function: void Function())
+  initializeLibraryReader (function: Future<LibraryReader> Function(Map<String, String>, String))
+  initializeLibraryReaderForDirectory (function: Future<PathAwareLibraryReader> Function(String, String))
+  testAnnotatedElements (function: void Function<T>(LibraryReader, GeneratorForAnnotation<T>, {Map<String, GeneratorForAnnotation<T>>? additionalGenerators, Iterable<String>? defaultConfiguration, Iterable<String>? expectedAnnotatedTests}))
+  throwsInvalidGenerationSourceError (function: Matcher Function(Object, {Object? elementMatcher, Object? todoMatcher}))
+  verifyGeneratorBatch (function: Future<({List<({String caseId, String declarations, String? generatedCode, CodegenIssueKind kind, String message})> issues, int passedCases, int totalCases})> Function({Map<String, String> auxiliaryFiles, required List<CodegenCase> cases, bool failOnIssues, required Generator generator, List<String> imports, bool includeWarnings, Duration isolateTimeout, String packageRoot, String preamble, String? workDir}))
+  CodegenCase (class extends Object, final):
+    new (const constructor: CodegenCase Function({required String declarations, String? elementName, Pattern? expectedError, required String id, String? runtimeCheck}))
+    declarations (getter: String)
+    elementName (getter: String?)
+    expectedError (getter: Pattern?)
+    id (getter: String)
+    runtimeCheck (getter: String?)
+  CodegenIssueKind (enum):
+    generatorException (enum constant: CodegenIssueKind)
+    runtimeFailure (enum constant: CodegenIssueKind)
+    staticError (enum constant: CodegenIssueKind)
+    unexpectedSuccess (enum constant: CodegenIssueKind)
+    values (static const getter: List<CodegenIssueKind>)
+  ShouldGenerate (class extends TestExpectation):
+    new (const constructor: ShouldGenerate Function(String, {Iterable<String>? configurations, bool contains, List<String>? expectedLogItems}))
+    contains (getter: bool)
+    expectedOutput (getter: String)
+    replaceConfiguration (method: TestExpectation Function(Iterable<String>))
+  ShouldGenerateFile (class extends TestExpectation):
+    new (const constructor: ShouldGenerateFile Function(String, {Iterable<String>? configurations, bool contains, List<String>? expectedLogItems, String? partOf, bool partOfCurrent}))
+    contains (getter: bool)
+    expectedOutputFileName (getter: String)
+    partOf (getter: String?)
+    partOfCurrent (getter: bool)
+    replaceConfiguration (method: TestExpectation Function(Iterable<String>))
+  ShouldThrow (class extends TestExpectation):
+    new (const constructor: ShouldThrow Function(String, {Iterable<String>? configurations, Object? element, List<String>? expectedLogItems, String? todo}))
+    element (getter: dynamic)
+    errorMessage (getter: String)
+    todo (getter: String?)
+    replaceConfiguration (method: TestExpectation Function(Iterable<String>))
+  CodegenBatchReport (type alias for ({List<({String caseId, String declarations, String? generatedCode, CodegenIssueKind kind, String message})> issues, int passedCases, int totalCases}))
+  CodegenIssue (type alias for ({String caseId, String declarations, String? generatedCode, CodegenIssueKind kind, String message}))
+package:source_gen_test/annotations.dart:
+  ShouldGenerate (see above)
+  ShouldGenerateFile (see above)
+  ShouldThrow (see above)
+package:source_gen_test/src/annotations.dart:
+  TestExpectation (non-public)
+package:source_gen_test/src/init_library_reader.dart:
+  PathAwareLibraryReader (non-public)
+dart:async:
+  Future (referenced)
+dart:core:
+  Duration (referenced)
+  Iterable (referenced)
+  List (referenced)
+  Map (referenced)
+  Object (referenced)
+  Pattern (referenced)
+  String (referenced)
+  bool (referenced)
+  int (referenced)
+package:matcher/src/interfaces.dart:
+  Matcher (referenced)
+package:source_gen/src/generator.dart:
+  Generator (referenced)
+package:source_gen/src/generator_for_annotation.dart:
+  GeneratorForAnnotation (referenced)
+package:source_gen/src/library.dart:
+  LibraryReader (referenced)
