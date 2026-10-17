@@ -949,5 +949,47 @@ class WarnNullAwareReported {
         ).throws<StateError>();
       },
     );
+
+    test(
+      'passes _MockBuildStep matching generateForElement to generators',
+      () async {
+        final report = await verifyGeneratorBatch(
+          generator: const _MockBuildStepCheckingGenerator(),
+          preamble: _testPreamble,
+          cases: const [
+            CodegenCase(
+              id: 'mock_build_step_check',
+              declarations: '''
+@_TestModel()
+class MockBuildStepTarget {
+  final int x;
+  MockBuildStepTarget(this.x);
+}
+''',
+            ),
+          ],
+        );
+        check(report.passedCases).equals(1);
+        check(report.issues).isEmpty();
+      },
+    );
   });
+}
+
+class _MockBuildStepCheckingGenerator
+    extends GeneratorForAnnotation<_TestModel> {
+  const _MockBuildStepCheckingGenerator();
+
+  @override
+  String generateForAnnotatedElement(
+    Element element,
+    ConstantReader annotation,
+    BuildStep buildStep,
+  ) {
+    if (!buildStep.toString().contains('_MockBuildStep')) {
+      // Mirrors package:build_cli validateSdkConstraint check.
+      buildStep.inputId;
+    }
+    return 'const _\$${element.name}Ok = true;';
+  }
 }

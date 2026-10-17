@@ -1,3 +1,13 @@
+## 1.4.1
+
+- Fix `verifyGeneratorBatch` to pass `_MockBuildStep` (matching
+  `generateForElement` and `testAnnotatedElements`) so generators that check for
+  `_MockBuildStep` (such as `package:build_cli`) do not fail with
+  `NoSuchMethodError: 'inputId'`.
+- Update `.agents/skills/source-gen-fuzz/SKILL.md` with `CodegenBatchReport` /
+  `CodegenIssue` / `CodegenIssueKind` reference signatures and blind-dogfooding
+  guidance.
+
 ## 1.4.0
 
 - Add `verifyGeneratorBatch`, `cartesianProduct`, `formatCodegenBatchReport`,

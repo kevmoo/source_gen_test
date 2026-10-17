@@ -15,10 +15,10 @@ description: >-
 # AST-Combinatorial `source_gen` Generator Fuzzing (`source-gen-fuzz`)
 
 Unlike byte-stream parsers, a `package:source_gen` `Generator` or
-`GeneratorForAnnotation<T>` (such as `json_serializable`, `built_value`,
-`freezed`, or custom annotation generators) takes **valid, resolved Dart
-declarations** (`ClassElement`, `FieldElement`, `DartType`, `ConstantReader`)
-and emits Dart source code (`.g.dart`).
+`GeneratorForAnnotation<T>` (such as `json_serializable`, `build_cli`,
+`built_value`, `freezed`, or custom annotation generators) takes **valid,
+resolved Dart declarations** (`ClassElement`, `FieldElement`, `DartType`,
+`ConstantReader`) and emits Dart source code (`.g.dart`).
 
 To uncover deep interaction bugs in a `Generator`, permute the **AST declaration
 axes that flip control-flow branches inside the generator** and validate every
@@ -28,9 +28,17 @@ permutation with `verifyGeneratorBatch` from
 
 ## Quick Start
 
-Run a standalone script (with `--enable-asserts` and `--packages` pointing to
-the target package's or workspace's `.dart_tool/package_config.json`) or a
-`dart test -c source` file in the target package directory:
+Ensure the target package depends on `source_gen_test: ^1.4.1` in
+`dev_dependencies` (`pubspec.yaml`), then run a `dart test -c source` file or a
+standalone script (with `--enable-asserts` and `--packages` pointing to the
+target package's or workspace's `.dart_tool/package_config.json`):
+
+```bash
+cd /path/to/target_package && \
+  dart test -c source test/codegen_fuzz_test.dart
+```
+
+For standalone exploration scripts outside `test/`:
 
 ```bash
 cd /path/to/target_package && \
@@ -49,10 +57,31 @@ imports cleanly.
 ## API Quick Reference (`package:source_gen_test/source_gen_test.dart`)
 
 ```dart
+enum CodegenIssueKind {
+  generatorException,
+  unexpectedSuccess,
+  staticError,
+  runtimeFailure,
+}
+
+typedef CodegenIssue = ({
+  String caseId,
+  CodegenIssueKind kind,
+  String message,
+  String declarations,
+  String? generatedCode,
+});
+
+typedef CodegenBatchReport = ({
+  int totalCases,
+  int passedCases,
+  List<CodegenIssue> issues,
+});
+
 const CodegenCase({
   required String id,
   required String declarations,
-  String? elementName,
+  String? elementName, // Defaults to the first top-level declaration in `declarations`.
   String? runtimeCheck,
   Pattern? expectedError,
 });
@@ -111,92 +140,122 @@ Group `100-500` cases per `verifyGeneratorBatch` call so the Dart SDK and
 package dependencies resolve once per batch (~1-2 seconds):
 
 ```dart
+import 'dart:convert';
+
+import 'package:collection/collection.dart';
 import 'package:json_annotation/json_annotation.dart';
 import 'package:json_serializable/src/json_serializable_generator.dart';
 import 'package:source_gen_test/source_gen_test.dart';
+import 'package:test/test.dart';
 
-Future<void> main() async {
-  final axes = cartesianProduct<String, String>({
-    'fieldType': ['int', 'int?', 'List<int?>', 'Map<String, int?>'],
-    'includeIfNull': ['null', 'true', 'false'],
-    'defaultValue': ['none', 'defaultVal'],
-  });
+const _typeSpecs = <String, ({String sample, String defaultLiteral})>{
+  'int': (sample: '42', defaultLiteral: '0'),
+  'int?': (sample: 'null', defaultLiteral: '0'),
+  'List<int?>': (sample: '[1, null]', defaultLiteral: 'const []'),
+  'Map<String, int?>': (sample: "{'a': 1, 'b': null}", defaultLiteral: 'const {}'),
+};
 
-  final cases = <CodegenCase>[];
-  for (var i = 0; i < axes.length; i++) {
-    final combo = axes[i];
-    final className = 'FuzzCase$i';
-    final type = combo['fieldType']!;
-    final inc = combo['includeIfNull']!;
-    final hasDefault = combo['defaultValue'] == 'defaultVal';
-    cases.add(
-      CodegenCase(
-        id: 'case_${i}_${combo.values.join("_")}',
-        declarations: '''
+void main() {
+  test('JsonSerializableGenerator combinatorial matrix', () async {
+    final axes = cartesianProduct<String, String>({
+      'fieldType': _typeSpecs.keys.toList(),
+      'includeIfNull': ['null', 'true', 'false'],
+      'defaultValue': ['none', 'defaultVal'],
+    });
+
+    final cases = <CodegenCase>[];
+    for (var i = 0; i < axes.length; i++) {
+      final combo = axes[i];
+      final className = 'FuzzCase$i';
+      final type = combo['fieldType']!;
+      final spec = _typeSpecs[type]!;
+      final inc = combo['includeIfNull']!;
+      final hasDefault = combo['defaultValue'] == 'defaultVal';
+      cases.add(
+        CodegenCase(
+          id: 'case_${i}_${combo.values.join("_")}',
+          declarations: '''
 @JsonSerializable(includeIfNull: $inc)
 class $className {
   final $type value;
-  $className(${hasDefault ? '{this.value = const []}' : 'this.value'});
+  $className(${hasDefault ? '{this.value = ${spec.defaultLiteral}}' : 'this.value'});
   factory $className.fromJson(Map<String, dynamic> json) =>
       _\$${className}FromJson(json);
   Map<String, dynamic> toJson() => _\$${className}ToJson(this);
 }
 ''',
-        runtimeCheck: '''
-final instance = $className(...);
-final encoded = instance.toJson();
-final decoded = $className.fromJson(encoded);
+          runtimeCheck: '''
+final instance = $className(${hasDefault ? 'value: ${spec.sample}' : spec.sample});
+final wire = jsonDecode(jsonEncode(instance.toJson())) as Map<String, dynamic>;
+final decoded = $className.fromJson(wire);
+if (!const DeepCollectionEquality().equals(
+  jsonDecode(jsonEncode(decoded.toJson())),
+  wire,
+)) {
+  throw StateError('Round-trip mismatch for $className: \$wire');
+}
 ''',
-      ),
-    );
-  }
+        ),
+      );
+    }
 
-  final report = await verifyGeneratorBatch(
-    generator: JsonSerializableGenerator(),
-    packageRoot: '.',
-    imports: const [
-      "import 'package:json_annotation/json_annotation.dart';",
-      "import 'aux_types.dart';",
-    ],
-    preamble: '''
+    final report = await verifyGeneratorBatch(
+      generator: JsonSerializableGenerator(),
+      imports: const [
+        "import 'dart:convert';",
+        "import 'package:collection/collection.dart';",
+        "import 'package:json_annotation/json_annotation.dart';",
+        "import 'aux_types.dart';",
+      ],
+      preamble: '''
 enum SharedStatus { active, paused }
 int sharedFromJson(Object? v) => (v as num).toInt();
 Object? sharedToJson(int v) => v;
 ''',
-    auxiliaryFiles: const {
-      'aux_types.dart': 'typedef CrossLibInt = int;\n',
-    },
-    cases: cases,
-    failOnIssues: false,
-  );
-  print('Passed ${report.passedCases}/${report.totalCases} cases.');
-  if (report.issues.isNotEmpty) {
-    print(formatCodegenBatchReport(report));
-  }
+      auxiliaryFiles: const {
+        'aux_types.dart': 'typedef CrossLibInt = int;\n',
+      },
+      cases: cases,
+      failOnIssues: false,
+    );
+    expect(report.issues, isEmpty, reason: formatCodegenBatchReport(report));
+  });
 }
 ```
 
 > [!IMPORTANT]
 >
+> - **Omit default arguments (`packageRoot: '.'`) under
+>   `avoid_redundant_argument_values`**: `verifyGeneratorBatch` defaults
+>   `packageRoot = '.'` and `failOnIssues = true`. Only pass `packageRoot` when
+>   running from outside the target package directory, and pass
+>   `failOnIssues: false` when asserting on `report.issues` directly via
+>   `expect(report.issues, isEmpty, reason: formatCodegenBatchReport(report))`.
+> - **Normalize JSON wire values (`jsonDecode(jsonEncode(...))`) and use
+>   `DeepCollectionEquality` in `runtimeCheck`**: In generators like
+>   `json_serializable` with `explicitToJson: false`, `toJson()` returns nested
+>   custom objects and `Iterable`s in memory without converting them to JSON
+>   maps/lists. Round-trip through `jsonDecode(jsonEncode(instance.toJson()))`
+>   before calling `fromJson`, and bind `final expected = $expectedExpr;` before
+>   string interpolation so string literals containing `'` do not break syntax
+>   in `fuzz_batch_main.dart`.
 > - **Place shared top-level helpers in `preamble:` and make them public when
 >   referenced by `runtimeCheck`**: `CodegenCase.runtimeCheck` executes in a
 >   separate entrypoint library (`fuzz_batch_main.dart`) that imports
 >   `fuzz_batch.dart`. Any shared helper type or function in `preamble:` that is
 >   referenced inside `runtimeCheck` must be public (not `_`-prefixed).
-> - **One target `elementName` is generated per `CodegenCase` for
->   `GeneratorForAnnotation`**: The generator runs once per `CodegenCase` on its
->   target `elementName` (or across the per-case library for plain `Generator`
->   implementations, automatically deduplicating shared top-level helpers like
->   `const _$SharedStatusEnumMap` across cases in `fuzz_batch.g.dart`). If a
->   case references a helper class in `preamble:` or `declarations` that is not
->   the case's target `elementName`, give that helper class manual
->   `fromJson`/`toJson` methods rather than relying on `_$HelperFromJson`.
+> - **Specify `elementName` when `declarations` contains multiple top-level
+>   declarations**: `CodegenCase.elementName` defaults to the first top-level
+>   declaration in `declarations`. When a `CodegenCase` defines per-case helper
+>   mixins, base classes, or concrete subclasses alongside the annotated target
+>   class, pass `elementName: className` explicitly.
 > - **Expose library-private `_$` helpers via public members when asserting in
->   `runtimeCheck`**: To inspect library-private symbols emitted into
->   `fuzz_batch.g.dart` (such as `_$ClsJsonSchema`, `_$ClsFieldMap`,
->   `_$ClsJsonKeys`, or `_$ClsPerFieldToJson`), expose a public static getter on
->   the test class inside `declarations` (for example,
->   `static Map<String, Object?> get schema => _$ClsJsonSchema;`).
+>   `runtimeCheck`**: Generators like `build_cli` or `json_serializable` emit
+>   public top-level functions (`parse<Cls>`) alongside library-private symbols
+>   (`_$populate<Cls>Parser`, `_$<Cls>Command`, `_$ClsJsonSchema`,
+>   `_$ClsFieldMap`). Because `runtimeCheck` runs in `fuzz_batch_main.dart`,
+>   expose a public static wrapper method or concrete subclass inside
+>   `CodegenCase.declarations` to exercise library-private generated members.
 
 ### Phase 3: Understand the Three Built-In Oracles
 
@@ -208,7 +267,7 @@ isolates failures per case without aborting the rest of the batch:
    - Resolves the library in `AnalysisContextCollection` (with
      `part 'fuzz_batch.g.dart';` included), wraps it in a `LibraryReader`, and
      invokes the generator individually for each `CodegenCase` inside its own
-     `try` / `catch`.
+     `try` / `catch` (passing `_MockBuildStep` to match `generateForElement`).
    - Any positive case that crashes in the generator is caught in `O(1)`
      directly on that case and recorded with its exact stack trace, while all
      surviving cases keep their exact per-case generated snippet.
@@ -233,8 +292,8 @@ isolates failures per case without aborting the rest of the batch:
    `Isolate.spawnUri`)**:
    - Wraps every surviving `CodegenCase.runtimeCheck` in an isolated
      `runZonedGuarded` + `try` / `catch` inside a single `Isolate.spawnUri`
-     script, streaming per-case completion events and verifying
-     `fromJson(toJson())` round-trip equivalence at runtime.
+     script, streaming per-case completion events and verifying runtime
+     round-trip equivalence.
 
 > [!NOTE]
 >
