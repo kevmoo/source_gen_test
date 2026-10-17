@@ -1,3 +1,9 @@
+## 1.4.2
+
+- Move the bundled agent skill to `skills/source-gen-test-fuzz/SKILL.md` so it
+  is included in the published package archive and discoverable via
+  `dart run skills@ get`.
+
 ## 1.4.1
 
 - Fix `verifyGeneratorBatch` to pass `_MockBuildStep` (matching

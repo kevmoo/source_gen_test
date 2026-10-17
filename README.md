@@ -77,3 +77,26 @@ class Case$i {
   ],
 );
 ```
+
+### AI Agent Skill (`source-gen-test-fuzz`)
+
+`package:source_gen_test` ships a bundled
+[`source-gen-test-fuzz`](skills/source-gen-test-fuzz/SKILL.md) agent skill for
+stress-testing `Generator` and `GeneratorForAnnotation` implementations with
+`cartesianProduct` and `verifyGeneratorBatch`.
+
+If your package depends on `source_gen_test` in `dev_dependencies`, install all
+bundled skills from your dependencies with
+[`package:skills`](https://pub.dev/packages/skills):
+
+```bash
+dart run skills@ get
+```
+
+Or install the skill directly from GitHub:
+
+```bash
+dart run skills@ add kevmoo/source_gen_test --skill source-gen-test-fuzz
+# or
+npx skills add kevmoo/source_gen_test --skill source-gen-test-fuzz
+```

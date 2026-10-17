@@ -1,5 +1,5 @@
 ---
-name: source-gen-fuzz
+name: source-gen-test-fuzz
 description: >-
   Stress-tests Dart source_gen Generator and GeneratorForAnnotation code
   generators by extracting AST control-flow branch axes, expanding combinatorial
@@ -8,11 +8,11 @@ description: >-
   static errors and warnings, and batched Isolate.spawnUri runtime round-trip
   execution. Use when fuzzing or stress-testing a source_gen generator package,
   auditing code generator soundness across AST permutations, or running
-  /source-gen-fuzz. Do not use for byte-stream parser fuzzing with libFuzzer
-  (use fuzz) or single-case golden expectation updates.
+  /source-gen-test-fuzz. Do not use for byte-stream parser fuzzing with
+  libFuzzer (use fuzz) or single-case golden expectation updates.
 ---
 
-# AST-Combinatorial `source_gen` Generator Fuzzing (`source-gen-fuzz`)
+# AST-Combinatorial `source_gen` Generator Fuzzing (`source-gen-test-fuzz`)
 
 Unlike byte-stream parsers, a `package:source_gen` `Generator` or
 `GeneratorForAnnotation<T>` (such as `json_serializable`, `build_cli`,
