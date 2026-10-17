@@ -295,6 +295,83 @@ isolates failures per case without aborting the rest of the batch:
      script, streaming per-case completion events and verifying runtime
      round-trip equivalence.
 
+### Phase 4: Structuring for Day-2 Maintenance & Surface-Area Drift Guards
+
+When committing a permanent `verifyGeneratorBatch` suite into a package's
+`test/` directory, structure it so future humans and agents can add new types,
+annotation parameters, or builder options without hunting through multi-switch
+control flow or leaving silent coverage gaps:
+
+1. **Use Flat Spec Tables (`_TypeSpec`, `_FeatureSpec`), Never Parallel `switch`
+   Chains**:
+   - Store type and feature variations in self-contained `const` data records or
+     classes (e.g. `const _typeSpecs = <_TypeSpec>[...]`,
+     `const _featureSpecs = <_FeatureSpec>[...]`) and pass their indices into
+     `cartesianProduct`.
+   - Adding a new supported type or annotation feature should require adding
+     **one** entry to a spec list rather than editing multiple `switch` blocks.
+2. **Isolate Asymmetric Options from Uniform Round-Trip Templates**:
+   - Options that omit generated methods (e.g. disabling `fromJson` or `toJson`
+     generation), require custom constructor names, or ignore unannotated fields
+     will fail compilation if forced into a uniform two-way round-trip class
+     template.
+   - Keep uniform features in the `cartesianProduct` slice and test asymmetric
+     options in a dedicated slice with tailored class templates.
+3. **Add a Dynamic Surface-Area Drift Guard Test**:
+   - Do **not** maintain a static `const _coveredParams = {...}` set, which can
+     be silenced by appending a string without writing a test case.
+   - Instead, introspect the target package's annotation constructor parameters
+     via `initializeLibraryReader` (and any canonical supported-type lists the
+     generator exports), and scan the actual `CodegenCase.declarations` strings
+     emitted by the positive slices to verify every non-deprecated parameter is
+     genuinely exercised:
+
+```dart
+Set<String> extractExercisedAnnotationArgs(
+  Iterable<CodegenCase> cases,
+  String annotationName,
+) {
+  final pattern = RegExp('@$annotationName\\s*\\(([^)]*)\\)', multiLine: true);
+  final argNamePattern = RegExp(r'(\b\w+)\s*:');
+  return {
+    for (final c in cases)
+      for (final m in pattern.allMatches(c.declarations))
+        for (final arg in argNamePattern.allMatches(m.group(1)!))
+          arg.group(1)!,
+  };
+}
+
+test('surface area drift guard: all annotation parameters are exercised', () async {
+  final positiveCases = [...buildSlice1Cases(), ...buildSlice2Cases()];
+  final reader = await initializeLibraryReader({
+    'surface.dart': "export 'package:my_pkg/annotations.dart' show MyAnnotation;",
+  }, 'surface.dart');
+
+  final cls = reader.element.exportNamespace.definedNames2['MyAnnotation']
+      as ClassElement;
+  final expectedParams = {
+    for (final p in cls.unnamedConstructor!.formalParameters)
+      if (!p.metadata.hasDeprecated) p.name!,
+  };
+  final exercised = extractExercisedAnnotationArgs(
+    positiveCases,
+    'MyAnnotation',
+  );
+
+  expect(
+    exercised,
+    containsAll(expectedParams),
+    reason: '''
+Every non-deprecated parameter on @MyAnnotation must be exercised in at least
+one positive CodegenCase (missing: ${expectedParams.difference(exercised)}).
+Add an entry to `_typeSpecs` or `_featureSpecs` in this test file.
+Uses `verifyGeneratorBatch` from `package:source_gen_test` (if using an AI
+agent, load the bundled `source-gen-test-fuzz` skill via `dart run skills@ get`).
+''',
+  );
+});
+```
+
 > [!NOTE]
 >
 > Always clean up any temporary scripts created during exploration so the target

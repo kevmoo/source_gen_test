@@ -1,3 +1,8 @@
+## 1.4.3-wip
+
+- Add Phase 4 (`Structuring for Day-2 Maintenance & Surface-Area Drift Guards`)
+  to `skills/source-gen-test-fuzz/SKILL.md`.
+
 ## 1.4.2
 
 - Move the bundled agent skill to `skills/source-gen-test-fuzz/SKILL.md` so it
