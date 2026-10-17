@@ -1,4 +1,4 @@
-## 1.4.2-wip
+## 1.4.2
 
 - Move the bundled agent skill to `skills/source-gen-test-fuzz/SKILL.md` so it
   is included in the published package archive and discoverable via
