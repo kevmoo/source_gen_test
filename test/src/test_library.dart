@@ -3,8 +3,12 @@ import 'package:source_gen_test/annotations.dart';
 import 'test_annotation.dart';
 
 part 'test_part.dart';
+// #region golden
 part 'goldens/test_library_file_part_of_current.dart';
 
+// #endregion golden
+
+// #region should-generate
 @ShouldGenerate(
   r'''
 const TestClass1NameLength = 10;
@@ -16,6 +20,7 @@ const TestClass1NameLowerCase = 'testclass1';
 @ShouldThrow('Uh...', configurations: ['vague'], element: false)
 @TestAnnotation()
 class TestClass1 {}
+// #endregion should-generate
 
 @ShouldGenerateFile(
   'goldens/test_library_file_no_part.dart',
@@ -34,6 +39,7 @@ class TestClassFileNoPart {}
 @TestAnnotation()
 class TestClassFilePartOf {}
 
+// #region golden
 @ShouldGenerateFile(
   'goldens/test_library_file_part_of_current.dart',
   partOfCurrent: true,
@@ -42,6 +48,7 @@ class TestClassFilePartOf {}
 @ShouldThrow('Uh...', configurations: ['vague'], element: false)
 @TestAnnotation()
 class TestClassFilePartOfCurrent {}
+// #endregion golden
 
 @ShouldGenerate(
   r'''

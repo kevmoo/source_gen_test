@@ -5,7 +5,7 @@
 Make it easy to test `Generators` derived from `package:source_gen` by
 annotating test files.
 
-```dart
+```dart @example test/src/test_library.dart#should-generate
 @ShouldGenerate(
   r'''
 const TestClass1NameLength = 10;
@@ -14,11 +14,7 @@ const TestClass1NameLowerCase = 'testclass1';
 ''',
   configurations: ['default', 'no-prefix-required'],
 )
-@ShouldThrow(
-  'Uh...',
-  configurations: ['vague'],
-  element: false,
-)
+@ShouldThrow('Uh...', configurations: ['vague'], element: false)
 @TestAnnotation()
 class TestClass1 {}
 ```
@@ -26,21 +22,27 @@ class TestClass1 {}
 Test against a golden output file if you also want to write tests on the output
 itself.
 
-```dart
-part 'goldens/testclass2.dart';
+```dart @example test/src/test_library.dart#golden
+part 'goldens/test_library_file_part_of_current.dart';
 
 @ShouldGenerateFile(
-  'goldens/testclass2.dart',
+  'goldens/test_library_file_part_of_current.dart',
   partOfCurrent: true,
   configurations: ['default', 'no-prefix-required'],
 )
-@ShouldThrow(
-  'Uh...',
-  configurations: ['vague'],
-  element: false,
-)
+@ShouldThrow('Uh...', configurations: ['vague'], element: false)
 @TestAnnotation()
-class TestClass2 {}
+class TestClassFilePartOfCurrent {}
+```
+
+Where `goldens/test_library_file_part_of_current.dart` contains:
+
+```dart @example test/src/goldens/test_library_file_part_of_current.dart
+part of '../test_library.dart';
+
+const TestClassFilePartOfCurrentNameLength = 26;
+
+const TestClassFilePartOfCurrentNameLowerCase = 'testclassfilepartofcurrent';
 ```
 
 Other helpers are also provided.
