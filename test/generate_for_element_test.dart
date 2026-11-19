@@ -31,10 +31,10 @@ class TestClass{}
       check(
           () => testAnnotatedElements(badReader, const TestGenerator()),
         ).throws<InvalidGenerationSourceError>()
-        ..has((e) => e.message, 'message').equals(
+        ..has('message', (e) => e.message).equals(
           'There are multiple annotations for these configurations: "c".',
         )
-        ..has((e) => e.todo, 'todo').equals(
+        ..has('todo', (e) => e.todo).equals(
           'Ensure each configuration is only represented once per member.',
         );
     });
@@ -55,10 +55,10 @@ class EmptyConfig{}
           () => testAnnotatedElements(badReader, const TestGenerator()),
         ).throws<InvalidGenerationSourceError>()
         ..has(
-          (e) => e.message,
           'message',
+          (e) => e.message,
         ).equals('`configuration` cannot be empty.')
-        ..has((e) => e.todo, 'todo').equals('Leave it `null`.');
+        ..has('todo', (e) => e.todo).equals('Leave it `null`.');
     });
   });
 
@@ -101,14 +101,14 @@ const TestClass2NameLowerCase = 'testclass2';
     await check(
       generateForElement(const TestGenerator(), reader, 'BadTestClass'),
     ).throws<InvalidGenerationSourceError>(
-      (it) => it
+      .it()
         ..has(
-          (e) => e.message,
           'message',
+          (e) => e.message,
         ).equals('All classes must start with `TestClass`.')
         ..has(
-          (e) => e.todo,
           'todo',
+          (e) => e.todo,
         ).equals('Rename the type or remove the `TestAnnotation` from class.'),
     );
   });
@@ -342,10 +342,10 @@ void _checkArgumentError(
 ]) {
   final error = check(callback).throws<ArgumentError>()
     ..has(
-      (e) => e.message,
       'message',
+      (e) => e.message,
     ).isA<String>().contains(expectedMessagePart);
   if (expectedName != null) {
-    error.has((e) => e.name, 'name').equals(expectedName);
+    error.has('name', (e) => e.name).equals(expectedName);
   }
 }

@@ -39,12 +39,12 @@ void main() {
           'test_library_bad.dart',
         ),
       ).throws<ArgumentError>(
-        (it) => it
+        .it()
           ..has(
-            (ae) => ae.message,
             'message',
+            (ae) => ae.message,
           ).equals('Must exist as a file in `sourceDirectory`.')
-          ..has((ae) => ae.name, 'name').equals('targetLibraryFileName'),
+          ..has('name', (ae) => ae.name).equals('targetLibraryFileName'),
       );
     });
 
@@ -61,9 +61,11 @@ void main() {
       await check(
         initializeLibraryReaderForDirectory('test/src', 'test_part.dart'),
       ).throws<NonLibraryAssetException>(
-        (it) => it
-            .has((ae) => ae.assetId.toString(), 'assetId.toString()')
-            .equals('__test__|lib/test_part.dart'),
+        .it()
+          ..has(
+            'assetId.toString()',
+            (ae) => ae.assetId.toString(),
+          ).equals('__test__|lib/test_part.dart'),
       );
     });
   });
