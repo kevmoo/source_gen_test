@@ -149,7 +149,7 @@ void main() {
     test(
       'returns empty list for empty axes map and rejects empty axis values',
       () {
-        check(cartesianProduct<String, int>(const {})).isEmpty();
+        check(cartesianProduct<String, int>(const {})).isEmpty;
         check(
           () => cartesianProduct<String, int>({
             'a': [1],
@@ -168,7 +168,7 @@ void main() {
       );
       check(report.totalCases).equals(0);
       check(report.passedCases).equals(0);
-      check(report.issues).isEmpty();
+      check(report.issues).isEmpty;
     });
 
     test(
@@ -251,8 +251,8 @@ enum NotAClass { a, b }
 
           check(report.totalCases).equals(3);
           check(report.passedCases).equals(3);
-          check(report.issues).isEmpty();
-          check(customWorkDir.listSync()).isEmpty();
+          check(report.issues).isEmpty;
+          check(customWorkDir.listSync()).isEmpty;
         } finally {
           if (customWorkDir.existsSync()) {
             customWorkDir.deleteSync(recursive: true);
@@ -382,7 +382,7 @@ enum MismatchedErrorEnum { a, b }
       check(report.passedCases).equals(1);
 
       final byId = {for (final i in report.issues) i.caseId: i};
-      check(byId.containsKey('good_case')).isFalse();
+      check(byId.containsKey('good_case')).isFalse;
       check(
         byId['crash_gen_case']?.kind,
       ).equals(CodegenIssueKind.generatorException);
@@ -390,7 +390,7 @@ enum MismatchedErrorEnum { a, b }
       check(byId[spaceCaseId]?.kind).equals(CodegenIssueKind.staticError);
       check(byId[spaceCaseId]!.generatedCode).isNotNull()
         ..contains('BrokenSyntaxCase1')
-        ..not((it) => it.contains('BrokenSyntaxCase10'));
+        ..not(.it()..contains('BrokenSyntaxCase10'));
       check(byId['good_case_10']?.kind).equals(CodegenIssueKind.staticError);
       check(
         byId['runtime_compile_error_case']?.kind,
@@ -562,7 +562,7 @@ class RequiresPartDirectiveDup {
         final annotatedById = {
           for (final i in annotatedReport.issues) i.caseId: i,
         };
-        check(annotatedById.containsKey('shared_part_check')).isFalse();
+        check(annotatedById.containsKey('shared_part_check')).isFalse;
         check(
           annotatedById['dup_part_check_1']?.kind,
         ).equals(CodegenIssueKind.unexpectedSuccess);
@@ -613,7 +613,7 @@ class FailPlainTarget {
 
         check(plainReport.totalCases).equals(3);
         check(plainReport.passedCases).equals(3);
-        check(plainReport.issues).isEmpty();
+        check(plainReport.issues).isEmpty;
       },
     );
 
@@ -724,7 +724,7 @@ if (UnexecutedAfterHang(1).toMap()['x'] != 1) throw StateError('bad');
         check(report.totalCases).equals(3);
         check(report.passedCases).equals(1);
         final byId = {for (final i in report.issues) i.caseId: i};
-        check(byId.containsKey('passes_before_hang')).isFalse();
+        check(byId.containsKey('passes_before_hang')).isFalse;
         check(
           byId['hanging_case']?.kind,
         ).equals(CodegenIssueKind.runtimeFailure);
@@ -801,7 +801,7 @@ if (IgnoredNullAwareCase(1).toMap()['x'] != 42) throw StateError('bad');
 
       check(report.totalCases).equals(1);
       check(report.passedCases).equals(1);
-      check(report.issues).isEmpty();
+      check(report.issues).isEmpty;
     });
 
     test(
@@ -854,7 +854,7 @@ if (kGeneratedLegacyCallbackName != 'LegacyCallback') {
 
         check(report.totalCases).equals(3);
         check(report.passedCases).equals(3);
-        check(report.issues).isEmpty();
+        check(report.issues).isEmpty;
       },
     );
 
@@ -927,7 +927,7 @@ class WarnNullAwareIgnored {
           ],
         );
         check(noWarnReport.passedCases).equals(1);
-        check(noWarnReport.issues).isEmpty();
+        check(noWarnReport.issues).isEmpty;
 
         await check(
           verifyGeneratorBatch(
@@ -970,7 +970,7 @@ class MockBuildStepTarget {
           ],
         );
         check(report.passedCases).equals(1);
-        check(report.issues).isEmpty();
+        check(report.issues).isEmpty;
       },
     );
   });
