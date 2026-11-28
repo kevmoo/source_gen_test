@@ -1,5 +1,6 @@
-## 1.4.3-wip
+## 1.5.0-wip
 
+- Export `PathAwareLibraryReader` and `TestExpectation`.
 - Add Phase 4 (`Structuring for Day-2 Maintenance & Surface-Area Drift Guards`)
   to `skills/source-gen-test-fuzz/SKILL.md`.
 

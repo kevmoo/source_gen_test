@@ -2,8 +2,7 @@
 /// @docImport 'test_annotated_classes.dart';
 library;
 
-/// Non-public, implementation base class of  [ShouldGenerate] and
-/// [ShouldThrow].
+/// Base class of [ShouldGenerate], [ShouldGenerateFile], and [ShouldThrow].
 abstract class TestExpectation {
   final Iterable<String>? configurations;
   final List<String> expectedLogItems;
