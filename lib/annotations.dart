@@ -2,4 +2,4 @@
 library;
 
 export 'src/annotations.dart'
-    show ShouldGenerate, ShouldGenerateFile, ShouldThrow;
+    show ShouldGenerate, ShouldGenerateFile, ShouldThrow, TestExpectation;
